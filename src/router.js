@@ -94,14 +94,10 @@ router.get(
 );
 router.post(
   "/users",
-  authMiddleware.authToken,
   usersMiddleware.validateRegister,
   usersController.register
   /*
     #swagger.tags = ['Usuários']
-    #swagger.security = [{
-      "bearerAuth": []
-    }] 
   */
 );
 router.post(

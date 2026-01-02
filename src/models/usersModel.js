@@ -35,12 +35,12 @@ const checkUsersExists = async (email, username) => {
 };
 
 const register = async (request) => {
-  const { username, email, passwordHash, admin, signature } = request;
+  const { tenant_id, username, email, passwordHash, admin, signature } = request;
 
   const query =
-    "INSERT INTO users (username, email, password, admin, signature) VALUES ($1, $2, $3, $4, $5)";
+    "INSERT INTO users (tenant_id, username, email, password, admin, signature) VALUES ($1, $2, $3, $4, $5, $6)";
 
-  const values = [username, email, passwordHash, admin, signature];
+  const values = [tenant_id, username, email, passwordHash, admin, signature];
 
   const connect = await connection.connect();
   const register = await connect.query(query, values);

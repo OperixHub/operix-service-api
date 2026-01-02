@@ -1,4 +1,5 @@
 const usersModel = require("../models/usersModel");
+const tenantsModel = require("../models/tenantsModel");
 const bcrypt = require("bcrypt");
 
 const getAll = async (_req, res) => {
@@ -13,7 +14,7 @@ const getSignature = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  const { username, email, password, admin, signature } = req.body;
+  const { tenantname, username, email, password, admin, signature } = req.body;
 
   const checkExists = await usersModel.checkUsersExists(email, username);
 

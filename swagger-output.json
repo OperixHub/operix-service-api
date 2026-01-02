@@ -177,24 +177,12 @@
           "Usuários"
         ],
         "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK"
           },
           "400": {
             "description": "Solicitação Inválida"
-          },
-          "401": {
-            "description": "Não autorizado"
           },
           "422": {
             "description": ""
@@ -224,6 +212,9 @@
                     "example": "any"
                   },
                   "confirmPassword": {
+                    "example": "any"
+                  },
+                  "tenantname": {
                     "example": "any"
                   },
                   "admin": {
