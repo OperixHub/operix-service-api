@@ -1,4 +1,4 @@
-import PanelControlService from "../services/panelControlService.js";
+import PanelControlService from "../services/PanelControlService.js";
 
 class PanelControlController {
   static async getCountProductByService(_req, res) {

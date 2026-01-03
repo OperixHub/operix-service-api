@@ -1,4 +1,4 @@
-import ServicesRepository from "../repositories/servicesRepository.js";
+import ServicesRepository from "../repositories/ServicesRepository.js";
 
 class ServicesService {
   static async getAll() {

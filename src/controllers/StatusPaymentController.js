@@ -1,4 +1,4 @@
-import StatusPaymentService from "../services/statusPaymentService.js";
+import StatusPaymentService from "../services/StatusPaymentService.js";
 
 class StatusPaymentController {
   static async getAll(_req, res) {

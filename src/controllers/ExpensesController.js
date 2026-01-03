@@ -1,4 +1,4 @@
-import ExpensesService from "../services/expensesService.js";
+import ExpensesService from "../services/ExpensesService.js";
 import utilities from "../utils/utils.js";
 
 class ExpensesController {

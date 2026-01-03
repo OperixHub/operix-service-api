@@ -1,4 +1,4 @@
-import StatusPaymentRepository from "../repositories/statusPaymentRepository.js";
+import StatusPaymentRepository from "../repositories/StatusPaymentRepository.js";
 
 class StatusPaymentService {
   static async getAll() {

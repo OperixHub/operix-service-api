@@ -1,4 +1,4 @@
-import OrderOfServiceRepository from "../repositories/orderOfServiceRepository.js";
+import OrderOfServiceRepository from "../repositories/OrderOfServiceRepository.js";
 
 class OrderOfServiceService {
   static async getAll() {

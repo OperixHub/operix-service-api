@@ -1,4 +1,4 @@
-import ToolsService from "../services/toolsService.js";
+import ToolsService from "../services/ToolsService.js";
 
 class ToolsController {
   static async getNotifications(_req, res) {

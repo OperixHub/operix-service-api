@@ -1,4 +1,4 @@
-import PanelAnalyticalService from "../services/panelAnalyticalService.js";
+import PanelAnalyticalService from "../services/PanelAnalyticalService.js";
 
 const getLabelCards = () => {
   const addZero = num => (num < 10 ? '0' : '') + num;

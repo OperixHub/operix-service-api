@@ -2,25 +2,25 @@ import { Router, json } from "express";
 import { serve, setup } from 'swagger-ui-express';
 import fs from "fs";
 
-import UsersController from "./controllers/usersController.js";
-import ServicesController from "./controllers/servicesController.js";
-import OrderOfServiceController from "./controllers/orderOfServiceController.js";
-import StatusPaymentController from "./controllers/statusPaymentController.js";
-import StatusServiceController from "./controllers/statusServiceController.js";
-import TypesProductController from "./controllers/typesProductController.js";
-import PanelControlController from "./controllers/panelControlController.js";
-import PanelAnalyticalController from "./controllers/panelAnalyticalController.js";
-import ToolsController from "./controllers/toolsController.js";
-import ExpensesController from "./controllers/expensesController.js";
+import UsersController from "./controllers/UsersController.js";
+import ServicesController from "./controllers/ServicesController.js";
+import OrderOfServiceController from "./controllers/OrderOfServiceController.js";
+import StatusPaymentController from "./controllers/StatusPaymentController.js";
+import StatusServiceController from "./controllers/StatusServiceController.js";
+import TypesProductController from "./controllers/TypesProductController.js";
+import PanelControlController from "./controllers/PanelControlController.js";
+import PanelAnalyticalController from "./controllers/PanelAnalyticalController.js";
+import ToolsController from "./controllers/ToolsController.js";
+import ExpensesController from "./controllers/ExpensesController.js";
 
-import AuthMiddleware from "./middlewares/authMiddleware.js";
-import UsersMiddleware from "./middlewares/usersMiddleware.js";
-import ServicesMiddleware from "./middlewares/servicesMiddleware.js";
-import OrderOfServiceMiddleware from "./middlewares/orderOfServiceMiddleware.js";
-import StatusPaymentMiddleware from "./middlewares/statusPaymentMiddleware.js";
-import StatusServiceMiddleware from "./middlewares/statusServiceMiddleware.js";
-import TypesProductMiddleware from "./middlewares/typesProductMiddleware.js";
-import ExpensesMiddleware from "./middlewares/expensesMiddleware.js";
+import AuthMiddleware from "./middlewares/AuthMiddleware.js";
+import UsersMiddleware from "./middlewares/UsersMiddleware.js";
+import ServicesMiddleware from "./middlewares/ServicesMiddleware.js";
+import OrderOfServiceMiddleware from "./middlewares/OrderOfServiceMiddleware.js";
+import StatusPaymentMiddleware from "./middlewares/StatusPaymentMiddleware.js";
+import StatusServiceMiddleware from "./middlewares/StatusServiceMiddleware.js";
+import TypesProductMiddleware from "./middlewares/TypesProductMiddleware.js";
+import ExpensesMiddleware from "./middlewares/ExpensesMiddleware.js";
 
 const swaggerFile = JSON.parse(
   fs.readFileSync(new URL("../swagger-output.json", import.meta.url))

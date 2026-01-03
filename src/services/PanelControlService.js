@@ -1,4 +1,4 @@
-import PanelControlRepository from "../repositories/panelControlRepository.js";
+import PanelControlRepository from "../repositories/PanelControlRepository.js";
 
 class PanelControlService {
   static async getCountProductByService() {

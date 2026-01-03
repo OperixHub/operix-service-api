@@ -1,4 +1,4 @@
-import PanelAnalyticalRepository from "../repositories/panelAnalyticalRepository.js";
+import PanelAnalyticalRepository from "../repositories/PanelAnalyticalRepository.js";
 
 class PanelAnalyticalService {
   static async getSumValuesOrdersPaid() {

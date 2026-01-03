@@ -1,13 +1,20 @@
 
 import connection from "../database/connection.js";
-import bcrypt from "bcrypt";
-import ValidationError from "../utils/ValidationError.js";
 
 class UsersRepository {
   static async getAll() {
     const connect = await connection.connect();
     const users = await connect.query(
       "SELECT id, username, email, admin, signature FROM users"
+    );
+    connect.release();
+    return users.rows;
+  }
+
+  static async getById(user) {
+    const connect = await connection.connect();
+    const users = await connect.query(
+      `SELECT id, username, admin FROM users WHERE id = ${user.id}`
     );
     connect.release();
     return users.rows;
@@ -63,21 +70,9 @@ class UsersRepository {
     return user.rows;
   }
 
-
-  static async verifyRemoveUser(id){
+  static async remove(user) {
     const connect = await connection.connect();
-    const users = await connect.query(
-      `SELECT id, username, admin FROM users WHERE id = ${id}`
-    );
-    connect.release();
-    return users.rows;
-  }
-
-  static async remove(id) {
-    const connect = await connection.connect();
-    const removed = await connect.query("DELETE FROM users WHERE id = $1", [
-      id,
-    ]);
+    const removed = await connect.query("DELETE FROM users WHERE id = $1", [ user.id ]);
     connect.release();
     return removed.rowCount;
   }

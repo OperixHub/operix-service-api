@@ -1,4 +1,4 @@
-import TypesProductRepository from "../repositories/typesProductRepository.js";
+import TypesProductRepository from "../repositories/TypesProductRepository.js";
 
 class TypesProductService {
   static async getAll() {

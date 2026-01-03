@@ -1,4 +1,4 @@
-import ServicesService from "../services/servicesService.js";
+import ServicesService from "../services/ServicesService.js";
 
 class ServicesController {
   static async getAll(_req, res) {

@@ -1,4 +1,4 @@
-import TypesProductService from "../services/typesProductService.js";
+import TypesProductService from "../services/TypesProductService.js";
 
 class TypesProductController {
   static async getAll(_req, res) {

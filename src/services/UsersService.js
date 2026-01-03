@@ -1,4 +1,4 @@
-import UsersRepository from "../repositories/usersRepository.js";
+import UsersRepository from "../repositories/UsersRepository.js";
 import ValidationError from "../utils/ValidationError.js";
 import jwt from "jsonwebtoken";
 
@@ -49,7 +49,9 @@ class UsersService {
       throw new ValidationError("Nome de usuário ou Senha incorreta.", 404);
     }
 
-    return UsersRepository.login(user);
+    const login = UsersRepository.login(user);
+
+    return await UsersService.signToken(user, login);
   }
 
   static async signToken(user, login) {
@@ -76,12 +78,17 @@ class UsersService {
     return { token: token, userData: decoded };
   }
 
-  static async verifyRemoveUser(id) {
-    return UsersRepository.verifyRemoveUser(id);
-  }
+  static async remove(user) {
+    const result = await UsersRepository.getById(user);
 
-  static async remove(id) {
-    return UsersRepository.remove(id);
+    if (!result || result.length === 0) {
+      throw new ValidationError("Usuário não encontrado.", 404);
+    }
+    if (result[0].admin === true) {
+      throw new ValidationError("Usuário administrador não pode ser removido.", 422);
+    }
+    
+    return UsersRepository.remove(user);
   }
 }
 

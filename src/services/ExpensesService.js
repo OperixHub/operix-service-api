@@ -1,4 +1,4 @@
-import ExpensesRepository from "../repositories/expensesRepository.js";
+import ExpensesRepository from "../repositories/ExpensesRepository.js";
 
 class ExpensesService {
   static async getAll() {

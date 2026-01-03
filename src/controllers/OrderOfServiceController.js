@@ -1,4 +1,4 @@
-import OrderOfServiceService from "../services/orderOfServiceService.js";
+import OrderOfServiceService from "../services/OrderOfServiceService.js";
 import utilities from "../utils/utils.js";
 
 class OrderOfServiceController {
