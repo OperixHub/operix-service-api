@@ -1,7 +1,6 @@
-
 import connection from "../database/connection.js";
 
-class UsersRepository {
+export default class UsersRepository {
   static async getAll() {
     const connect = await connection.connect();
     const users = await connect.query(
@@ -77,5 +76,3 @@ class UsersRepository {
     return removed.rowCount;
   }
 }
-
-export default UsersRepository;

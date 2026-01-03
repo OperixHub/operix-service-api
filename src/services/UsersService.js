@@ -2,7 +2,7 @@ import UsersRepository from "../repositories/UsersRepository.js";
 import ValidationError from "../utils/ValidationError.js";
 import jwt from "jsonwebtoken";
 
-class UsersService {
+export default class UsersService {
   static async getAll() {
     return UsersRepository.getAll();
   }
@@ -11,12 +11,8 @@ class UsersService {
     return UsersRepository.getSignature(user);
   }
 
-  static async checkUsersExists(user) {
-    return UsersRepository.checkUsersExists(user);
-  }
-
   static async register(user) {
-    const checkExists = await this.checkUsersExists(user);
+    const checkExists = await UsersRepository.checkUsersExists(user);
 
     if (checkExists[0] > 0 && checkExists[1] > 0) {
       throw new ValidationError("Este nome de usuário e email já estão cadastrados.", 422);
@@ -51,7 +47,7 @@ class UsersService {
 
     const login = UsersRepository.login(user);
 
-    return await UsersService.signToken(user, login);
+    return await this.signToken(user, login);
   }
 
   static async signToken(user, login) {
@@ -91,5 +87,3 @@ class UsersService {
     return UsersRepository.remove(user);
   }
 }
-
-export default UsersService;
