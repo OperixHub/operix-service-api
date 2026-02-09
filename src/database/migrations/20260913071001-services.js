@@ -1,7 +1,5 @@
-"use strict" 
-
 /** @type {import('sequelize-cli').Migration} */
-module.exports = {
+export default {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("services", {
       tenant_id: {
@@ -78,7 +76,7 @@ module.exports = {
     await queryInterface.addIndex("services", ["tenant_id"]);
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("services") 
+  async down(queryInterface) {
+    await queryInterface.dropTable("services");
   },
-} 
+};
