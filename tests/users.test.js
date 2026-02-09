@@ -16,7 +16,7 @@ beforeAll(() => {
 });
 
 afterEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 function mockConnectWithResponses(responder) {
@@ -29,7 +29,7 @@ function mockConnectWithResponses(responder) {
 }
 
 describe('Users routes (integration-ish, DB mocked)', () => {
-  test('POST /users - missing username returns 400', async () => {
+  test('POST /users - nome de usuário ausente retorna 400', async () => {
     const res = await request(app)
       .post('/users')
       .send({ email: 'a@b.com', password: '123', confirmPassword: '123' });
@@ -38,7 +38,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual({ msg: 'Campo "Nome de Usuário" é obrigatório.' });
   });
 
-  test('POST /users - success (controller->service->repo)', async () => {
+  test('POST /users - sucesso (controller->service->repo)', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE email')) return { rowCount: 0, rows: [] };
       if (sql.includes('WHERE username')) return { rowCount: 0, rows: [] };
@@ -54,7 +54,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual([{ id: 1, username: 'u' }]);
   });
 
-  test('POST /users/login - missing password returns 400', async () => {
+  test('POST /users/login - senha ausente retorna 400', async () => {
     const res = await request(app)
       .post('/users/login')
       .send({ username: 'u' });
@@ -63,7 +63,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual({ msg: 'Campo "Senha" é obrigatório.' });
   });
 
-  test('POST /users/login - success returns token and user', async () => {
+  test('POST /users/login - sucesso retorna token e usuário', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE username')) return { rows: [{ id: 1, username: 'u', password: 'hashed', admin: false }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
@@ -78,13 +78,13 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body.user).toEqual(expect.objectContaining({ id: 1, username: 'u', admin: false }));
   });
 
-  test('GET /users - requires auth', async () => {
+  test('GET /users - requer autenticação', async () => {
     const res = await request(app).get('/users');
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ msg: 'Acesso Negado!' });
   });
 
-  test('GET /users - authorized returns list', async () => {
+  test('GET /users - autorizado retorna lista de usuários', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('SELECT id, username, email, admin, signature FROM users')) return { rows: [{ id: 1, username: 'u' }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
@@ -100,7 +100,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual([{ id: 1, username: 'u' }]);
   });
 
-  test('GET /users/signature/:id - authorized returns signature', async () => {
+  test('GET /users/signature/:id - autorizado retorna assinatura', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('SELECT signature FROM users')) return { rows: [{ signature: 'base64sig' }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
@@ -116,7 +116,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toBe('base64sig');
   });
 
-  test('DELETE /users/:id - user not found', async () => {
+  test('DELETE /users/:id - usuário não encontrado', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE id =')) return { rows: [], rowCount: 0 };
       return { rows: [], rowCount: 0 };
@@ -131,7 +131,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual({ msg: 'Usuário não encontrado.' });
   });
 
-  test('DELETE /users/:id - admin cannot be removed', async () => {
+  test('DELETE /users/:id - administrador não pode ser removido', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE id =')) return { rows: [{ admin: true }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
@@ -146,7 +146,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual({ msg: 'Usuário administrador não pode ser removido.' });
   });
 
-  test('DELETE /users/:id - success returns 204', async () => {
+  test('DELETE /users/:id - sucesso retorna 204', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE id =')) return { rows: [{ admin: false }], rowCount: 1 };
       if (sql.startsWith('DELETE FROM users')) return { rowCount: 1 };
