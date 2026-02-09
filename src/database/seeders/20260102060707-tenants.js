@@ -5,7 +5,7 @@ export default {
       "tenants",
       [
         {
-          name: "Lima Refrigeração",
+          name: process.env.SEEDER_ADMIN_NAME_TENANT,
         },
       ],
       {}
