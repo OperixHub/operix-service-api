@@ -37,6 +37,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "401": {
             "description": "Não autorizado"
           }
@@ -53,8 +56,14 @@
         ],
         "description": "",
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "400": {
             "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
           }
         },
         "requestBody": {
@@ -106,6 +115,9 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "401": {
             "description": "Não autorizado"
           }
@@ -124,8 +136,14 @@
         ],
         "description": "",
         "responses": {
+          "200": {
+            "description": "OK"
+          },
           "400": {
             "description": "Solicitação Inválida"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
           }
         },
         "requestBody": {
@@ -171,8 +189,14 @@
           }
         ],
         "responses": {
+          "204": {
+            "description": "Nenhum Conteúdo"
+          },
           "401": {
             "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro Interno do Servidor"
           }
         },
         "security": [

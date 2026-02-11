@@ -1,15 +1,14 @@
-import request from 'supertest';
-import appModule from '../src/app.js';
-import connection from '../src/database/connection.js';
+import supertest from 'supertest';
+import { app } from '../../src/app.js';
+import connection from '../../src/database/connection.js';
 import jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 
 jest.mock('bcrypt', () => ({
   genSalt: jest.fn(() => Promise.resolve('salt')),
   hash: jest.fn(() => Promise.resolve('hashed')),
   compare: jest.fn(() => Promise.resolve(true))
 }));
-
-const { app } = appModule;
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -28,9 +27,9 @@ function mockConnectWithResponses(responder) {
   return { query, release };
 }
 
-describe('Users routes (integration-ish, DB mocked)', () => {
+describe('Testes de Integração - Rotas de Usuários', () => {
   test('POST /users - nome de usuário ausente retorna 400', async () => {
-    const res = await request(app)
+    const res = await supertest(app)
       .post('/users')
       .send({ email: 'a@b.com', password: '123', confirmPassword: '123' });
 
@@ -38,7 +37,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     expect(res.body).toEqual({ msg: 'Campo "Nome de Usuário" é obrigatório.' });
   });
 
-  test('POST /users - sucesso (controller->service->repo)', async () => {
+  test('POST /users - sucesso ao listar usuários retorna 200', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('WHERE email')) return { rowCount: 0, rows: [] };
       if (sql.includes('WHERE username')) return { rowCount: 0, rows: [] };
@@ -46,7 +45,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
       return { rows: [], rowCount: 0 };
     });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .post('/users')
       .send({ username: 'u', email: 'a@b.com', password: '123', confirmPassword: '123' });
 
@@ -55,7 +54,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
   });
 
   test('POST /users/login - senha ausente retorna 400', async () => {
-    const res = await request(app)
+    const res = await supertest(app)
       .post('/users/login')
       .send({ username: 'u' });
 
@@ -64,12 +63,15 @@ describe('Users routes (integration-ish, DB mocked)', () => {
   });
 
   test('POST /users/login - sucesso retorna token e usuário', async () => {
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash('123', salt);
+
     mockConnectWithResponses((sql) => {
-      if (sql.includes('WHERE username')) return { rows: [{ id: 1, username: 'u', password: 'hashed', admin: false }], rowCount: 1 };
+      if (sql.includes('WHERE username')) return { rows: [{ id: 1, username: 'u', password: passwordHash, admin: false }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .post('/users/login')
       .send({ username: 'u', password: '123' });
 
@@ -79,7 +81,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
   });
 
   test('GET /users - requer autenticação', async () => {
-    const res = await request(app).get('/users');
+    const res = await supertest(app).get('/users');
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ msg: 'Acesso Negado!' });
   });
@@ -92,7 +94,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
 
     const token = jwt.sign({ id: 1, username: 'u', admin: false }, process.env.SECRET, { expiresIn: '1d' });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .get('/users')
       .set('Authorization', `Bearer ${token}`);
 
@@ -108,7 +110,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
 
     const token = jwt.sign({ id: 1, username: 'u', admin: false }, process.env.SECRET, { expiresIn: '1d' });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .get('/users/signature/1')
       .set('Authorization', `Bearer ${token}`);
 
@@ -123,7 +125,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     });
     const token = jwt.sign({ id: 1, username: 'u', admin: false }, process.env.SECRET, { expiresIn: '1d' });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .delete('/users/2')
       .set('Authorization', `Bearer ${token}`);
 
@@ -138,7 +140,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     });
     const token = jwt.sign({ id: 1, username: 'u', admin: true }, process.env.SECRET, { expiresIn: '1d' });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .delete('/users/2')
       .set('Authorization', `Bearer ${token}`);
 
@@ -154,7 +156,7 @@ describe('Users routes (integration-ish, DB mocked)', () => {
     });
     const token = jwt.sign({ id: 1, username: 'u', admin: false }, process.env.SECRET, { expiresIn: '1d' });
 
-    const res = await request(app)
+    const res = await supertest(app)
       .delete('/users/2')
       .set('Authorization', `Bearer ${token}`);
 
