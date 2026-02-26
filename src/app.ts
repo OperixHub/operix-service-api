@@ -20,8 +20,7 @@ app.use(json());
 app.use(cors({
   origin: process.env.ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Authorization', 'Content-Type', 'Accept'],
-  credentials: true
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Authorization', 'Content-Type', 'Accept']
 }));
 
 app.use((_req: Request, res: Response, next: NextFunction) => {
