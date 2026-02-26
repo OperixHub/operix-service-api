@@ -1,7 +1,7 @@
-#Starter
+## Starter
 
-## Production
+### Production
 ```
-npm install -g bun && npm i && npm run build && npm run migrate && npm run seed && npm run start
+npm install -g bun && bun i && bun run build && bun run migrate && bun run seed && bun run start
 ```
 
