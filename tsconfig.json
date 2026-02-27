@@ -36,7 +36,8 @@
     "moduleResolution": "Node"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "swagger.ts"
   ],
   "exclude": [
     "node_modules",

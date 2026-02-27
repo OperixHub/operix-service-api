@@ -1,9 +1,9 @@
 import { Router, json } from 'express';
 import { serve, setup } from 'swagger-ui-express';
-import fs from 'fs';
-import path from 'path';
+import { generateOpenApiDocument } from "./docs/openapi";
 
-import UsersController from './controllers/UsersController.js';
+import AuthController from './controllers/AuthController';
+import UsersController from './controllers/UsersController';
 import ServicesController from './controllers/ServicesController.js';
 import OrderOfServiceController from './controllers/OrderOfServiceController.js';
 import StatusPaymentController from './controllers/StatusPaymentController.js';
@@ -14,8 +14,7 @@ import PanelAnalyticalController from './controllers/PanelAnalyticalController.j
 import ToolsController from './controllers/ToolsController.js';
 import ExpensesController from './controllers/ExpensesController.js';
 
-import AuthMiddleware from './middlewares/AuthMiddleware.js';
-import UsersMiddleware from './middlewares/UsersMiddleware.js';
+import AuthMiddleware from './middlewares/AuthMiddleware';
 import ServicesMiddleware from './middlewares/ServicesMiddleware.js';
 import OrderOfServiceMiddleware from './middlewares/OrderOfServiceMiddleware.js';
 import StatusPaymentMiddleware from './middlewares/StatusPaymentMiddleware.js';
@@ -23,16 +22,25 @@ import StatusServiceMiddleware from './middlewares/StatusServiceMiddleware.js';
 import TypesProductMiddleware from './middlewares/TypesProductMiddleware.js';
 import ExpensesMiddleware from './middlewares/ExpensesMiddleware.js';
 
-const fileSwagger: string = fs.readFileSync(path.resolve(process.cwd(), 'swagger-output.json')).toString();
-const swaggerFile: any = JSON.parse(fileSwagger);
+import ValidateMiddleware from "./middlewares/ValidateMiddleware";
+
 const router = Router();
+const openApiDocument = generateOpenApiDocument();
 
 router.use(json());
 router.use('/', serve);
-router.get('/', setup(swaggerFile)
-  /*
-    #swagger.ignore = true
-  */
+router.get('/', setup(openApiDocument));
+
+router.post(
+  '/auth/register',
+  ValidateMiddleware.validateSchema(AuthMiddleware.registerSchema),
+  AuthController.register
+);
+
+router.post(
+  '/auth/login',
+  ValidateMiddleware.validateSchema(AuthMiddleware.loginSchema),
+  AuthController.login
 );
 
 router.get(
@@ -45,6 +53,7 @@ router.get(
     }] 
   */
 );
+
 router.get(
   '/users/signature/:id',
   AuthMiddleware.authToken,
@@ -56,22 +65,7 @@ router.get(
     }] 
   */
 );
-router.post(
-  '/users',
-  UsersMiddleware.validateRegister,
-  UsersController.register
-  /*
-    #swagger.tags = ['Usuários']
-  */
-);
-router.post(
-  '/users/login',
-  UsersMiddleware.validateLogin,
-  UsersController.login
-  /*
-    #swagger.tags = ['Usuários']
-  */
-);
+
 router.delete(
   '/users/:id', AuthMiddleware.authToken,
   UsersController.remove
@@ -82,7 +76,6 @@ router.delete(
     }] 
   */
 );
-
 
 router.get(
   '/expenses', AuthMiddleware.authToken,
