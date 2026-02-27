@@ -1,5 +1,5 @@
-import { server } from './app.js';
-import './socket.js';
+import { server } from './app';
+import './socket';
 import dotenv from 'dotenv';
 
 dotenv.config();

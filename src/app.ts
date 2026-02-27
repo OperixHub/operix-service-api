@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express, { json, type Request, type Response, type NextFunction } from 'express';
 import { createServer, type Server as HttpServer } from 'http';
-import router from './router.js';
+import router from './router';
 import { Server, type Server as SocketServer } from 'socket.io';
 import cors from 'cors';
 

@@ -8,10 +8,10 @@ const getAll = async () => {
 };
 
 const create = async (types_product) => {
-  const { name } = types_product;
-  const query = "INSERT INTO types_product (name) VALUES ($1)";
+  const { tenant_id, name } = types_product;
+  const query = "INSERT INTO types_product (tenant_id, name) VALUES ($1, $2)";
 
-  const values = [name];
+  const values = [tenant_id, name];
 
   const connect = await connection.connect();
   const created = await connect.query(query, values);

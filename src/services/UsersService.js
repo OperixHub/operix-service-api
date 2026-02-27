@@ -52,7 +52,7 @@ export default class UsersService {
   static async signToken(user, login) {
     let expiration = "";
     if (user.remember == true) {
-      expiration = "6d";
+      expiration = "7d";
     } else {
       expiration = "1d";
     }
@@ -62,7 +62,8 @@ export default class UsersService {
       {
         id: login.id,
         username: login.username,
-        admin: login.admin
+        admin: login.admin,
+        tenant_id: login.tenant_id
       },
       secret,
       { expiresIn: expiration }

@@ -19,7 +19,7 @@ const doc = {
       description: 'Desenvolvimento'
     },
     {
-      url: 'Em breve',
+      url: 'https://operix-service-api.cloudx.work',
       description: "Produção"
     }
   ],
@@ -34,8 +34,8 @@ const doc = {
 };
 
 const outputFile = './swagger-output.json';
-const routes = ['./src/router.js'];
+const routes = ['./src/router'];
 
 swaggerAutogenInstance(outputFile, routes, doc).then(async () => {
-  const { default: app } = await import('./src/app.js');
+  const { default: app } = await import('./src/app');
 });

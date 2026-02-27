@@ -1,3 +1,3 @@
-import { io } from './app.js';
+import { io } from './app';
 
 io.on('connection', () => { });

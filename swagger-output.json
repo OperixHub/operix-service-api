@@ -16,7 +16,7 @@
       "description": "Desenvolvimento"
     },
     {
-      "url": "Em breve",
+      "url": "https://operix-service-api.cloudx.work",
       "description": "Produção"
     }
   ],
@@ -82,6 +82,9 @@
                     "example": "any"
                   },
                   "confirmPassword": {
+                    "example": "any"
+                  },
+                  "tenant_id": {
                     "example": "any"
                   }
                 }
