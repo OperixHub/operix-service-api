@@ -34,8 +34,8 @@ const doc = {
 };
 
 const outputFile = './swagger-output.json';
-const routes = ['./src/router.ts'];
+const routes = ['./src/router'];
 
 swaggerAutogenInstance(outputFile, routes, doc).then(async () => {
-  const { default: app } = await import('./src/app.ts');
+  const { default: app } = await import('./src/app');
 });
