@@ -17,6 +17,7 @@ export default class AuthController {
 
   static async login(req: Request<{}, {}, LoginSchema>, res: Response) {
     try {
+      console.log(req.body)
       const user = User.fromRequestLogin(req.body);
       const login = await UsersService.login(user);
       return res.status(200).json({ token: login.token, user: login.userData });
