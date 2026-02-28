@@ -30,6 +30,11 @@ export default {
         allowNull: false,
         type: Sequelize.STRING,
       },
+      root: {
+        allowNull: true,
+        defaultValue: false,
+        type: Sequelize.BOOLEAN,
+      },
       admin: {
         allowNull: true,
         defaultValue: false,

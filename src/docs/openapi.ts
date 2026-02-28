@@ -2,13 +2,29 @@ import {
   OpenAPIRegistry,
   OpenApiGeneratorV3
 } from "@asteasolutions/zod-to-openapi";
+import { z } from "zod";
 
 import AuthMiddleware from "../middlewares/AuthMiddleware";
+import ExpensesMiddleware from "../middlewares/ExpensesMiddleware";
+import ServicesMiddleware from "../middlewares/ServicesMiddleware";
+import OrderOfServiceMiddleware from "../middlewares/OrderOfServiceMiddleware";
+import StatusPaymentMiddleware from "../middlewares/StatusPaymentMiddleware";
+import StatusServiceMiddleware from "../middlewares/StatusServiceMiddleware";
+import TypesProductMiddleware from "../middlewares/TypesProductMiddleware";
+import TenantsMiddleware from "../middlewares/TenantsMiddleware";
 
 const registry = new OpenAPIRegistry();
 
 registry.register("Register", AuthMiddleware.registerSchema);
 registry.register("Login", AuthMiddleware.loginSchema);
+registry.register("ExpenseCreate", ExpensesMiddleware.createSchema);
+registry.register("ServiceCreate", ServicesMiddleware.createSchema);
+registry.register("ServiceUpdateInfoClient", ServicesMiddleware.updateInfoClientSchema);
+registry.register("OrderUpdateEstimate", OrderOfServiceMiddleware.updateEstimateSchema);
+registry.register("StatusPaymentCreate", StatusPaymentMiddleware.createSchema);
+registry.register("StatusServiceCreate", StatusServiceMiddleware.createSchema);
+registry.register("TypeProductCreate", TypesProductMiddleware.createSchema);
+registry.register("TenantCreate", TenantsMiddleware.createSchema);
 
 registry.registerComponent("securitySchemes", "bearerAuth", {
   type: "http",
@@ -16,30 +32,23 @@ registry.registerComponent("securitySchemes", "bearerAuth", {
   bearerFormat: "JWT",
 });
 
+const security = [{ bearerAuth: [] }];
+
+// ========================
+// AUTH
+// ========================
+
 registry.registerPath({
   method: "post",
   path: "/auth/register",
   tags: ["Autenticação"],
   request: {
     body: {
+      content: { "application/json": { schema: AuthMiddleware.registerSchema } },
       required: true,
-      content: {
-        "application/json": {
-          schema: AuthMiddleware.registerSchema
-        }
-      }
     }
   },
-  responses: {
-    201: {
-      description: "Usuário criado",
-      content: {
-        "application/json": {
-          schema: AuthMiddleware.registerSchema
-        }
-      }
-    }
-  }
+  responses: { 201: { description: "Usuário criado" } }
 });
 
 registry.registerPath({
@@ -48,25 +57,380 @@ registry.registerPath({
   tags: ["Autenticação"],
   request: {
     body: {
+      content: { "application/json": { schema: AuthMiddleware.loginSchema } },
       required: true,
-      content: {
-        "application/json": {
-          schema: AuthMiddleware.loginSchema
-        }
-      }
     }
   },
-  responses: {
-    201: {
-      description: "Usuário logado",
-      content: {
-        "application/json": {
-          schema: AuthMiddleware.loginSchema
-        }
-      }
-    }
-  }
+  responses: { 201: { description: "Usuário logado" } }
 });
+
+// ========================
+// USERS
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/users",
+  tags: ["Usuários"],
+  security,
+  responses: { 200: { description: "Usuários listados" } }
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/users/signature/{id}",
+  tags: ["Usuários"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 200: { description: "Assinatura do usuário" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/users/{id}",
+  tags: ["Usuários"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Usuário deletado" } }
+});
+
+// ========================
+// TENANTS
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/tenants",
+  tags: ["Unidades"],
+  security,
+  responses: { 200: { description: "Unidades listadas" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/tenants",
+  tags: ["Unidades"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: TenantsMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Unidade criada" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/tenants/{id}",
+  tags: ["Unidades"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Unidade deletada" } }
+});
+
+// ========================
+// EXPENSES
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/expenses",
+  tags: ["Despesas"],
+  security,
+  responses: { 200: { description: "Despesas listadas" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/expenses",
+  tags: ["Despesas"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: ExpensesMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Despesa criada" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/expenses/{id}",
+  tags: ["Despesas"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Despesa deletada" } }
+});
+
+// ========================
+// SERVICES
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/services",
+  tags: ["Serviços"],
+  security,
+  responses: { 200: { description: "Serviços listados" } }
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/services/warehouse",
+  tags: ["Serviços"],
+  security,
+  responses: { 200: { description: "Serviços do almoxerifado listados" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/services",
+  tags: ["Serviços"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: ServicesMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Serviço criado" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/services/warehouse/{id}/{value}",
+  tags: ["Serviços"],
+  security,
+  request: { params: z.object({ id: z.string(), value: z.string() }) },
+  responses: { 200: { description: "Serviço do almoxerifado atualizado" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/services/info/client/{id}",
+  tags: ["Serviços"],
+  security,
+  request: {
+    params: z.object({ id: z.string() }),
+    body: {
+      content: { "application/json": { schema: ServicesMiddleware.updateInfoClientSchema } },
+      required: true,
+    }
+  },
+  responses: { 200: { description: "Informação do cliente atualizada" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/services/status/{id}/{status}",
+  tags: ["Serviços"],
+  security,
+  request: { params: z.object({ id: z.string(), status: z.string() }) },
+  responses: { 200: { description: "Status de serviço atualizado" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/services/status/payment/{id}/{status}",
+  tags: ["Serviços"],
+  security,
+  request: { params: z.object({ id: z.string(), status: z.string() }) },
+  responses: { 200: { description: "Status de pagamento atualizado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/services/{id}/{cod}/{typeTable}",
+  tags: ["Serviços"],
+  security,
+  request: { params: z.object({ id: z.string(), cod: z.string(), typeTable: z.string() }) },
+  responses: { 204: { description: "Serviço deletado" } }
+});
+
+// ========================
+// ORDER OF SERVICE
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/order_of_service/",
+  tags: ["Ordens de Serviço"],
+  security,
+  responses: { 200: { description: "Ordens de Serviço listadas" } }
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/order_of_service/{cod}",
+  tags: ["Ordens de Serviço"],
+  security,
+  request: { params: z.object({ cod: z.string() }) },
+  responses: { 200: { description: "Ordem de Serviço detalhada" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/order_of_service/estimate/{cod}",
+  tags: ["Ordens de Serviço"],
+  security,
+  request: {
+    params: z.object({ cod: z.string() }),
+    body: {
+      content: { "application/json": { schema: OrderOfServiceMiddleware.updateEstimateSchema } },
+      required: true,
+    }
+  },
+  responses: { 200: { description: "Orçamento da Ordem de Serviço atualizado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/order_of_service/estimate/{cod}/{idEstimate}",
+  tags: ["Ordens de Serviço"],
+  security,
+  request: { params: z.object({ cod: z.string(), idEstimate: z.string() }) },
+  responses: { 204: { description: "Orçamento removido" } }
+});
+
+// ========================
+// STATUS PAYMENT
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/status_payment",
+  tags: ["Status de Pagamento"],
+  security,
+  responses: { 200: { description: "Status de Pagamento listados" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/status_payment",
+  tags: ["Status de Pagamento"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: StatusPaymentMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Status de Pagamento criado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/status_payment/{id}",
+  tags: ["Status de Pagamento"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Status de Pagamento deletado" } }
+});
+
+// ========================
+// STATUS SERVICE
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/status_service",
+  tags: ["Status de Serviço"],
+  security,
+  responses: { 200: { description: "Status de Serviço listados" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/status_service",
+  tags: ["Status de Serviço"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: StatusServiceMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Status de Serviço criado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/status_service/{id}",
+  tags: ["Status de Serviço"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Status de Serviço deletado" } }
+});
+
+// ========================
+// TYPES PRODUCT
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/types_product",
+  tags: ["Tipos de Produtos"],
+  security,
+  responses: { 200: { description: "Tipos de Produtos listados" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/types_product",
+  tags: ["Tipos de Produtos"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: TypesProductMiddleware.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { description: "Tipo de Produto criado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/types_product/{id}",
+  tags: ["Tipos de Produtos"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Tipo de Produto deletado" } }
+});
+
+// ========================
+// PANEL ANALYTICAL
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/panel_analytical/info_values_os_paid",
+  tags: ["Paineis de Analíticos"],
+  security,
+  responses: { 200: { description: "Soma de valores de OS pagas" } }
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/panel_analytical/info_invoicing_liquid",
+  tags: ["Paineis de Analíticos"],
+  security,
+  responses: { 200: { description: "Faturamento líquido" } }
+});
+
+// ========================
+// TOOLS
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/tools/notifications",
+  tags: ["Utilitários"],
+  security,
+  responses: { 200: { description: "Notificações" } }
+});
+
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
@@ -74,24 +438,24 @@ export function generateOpenApiDocument() {
   return generator.generateDocument({
     openapi: "3.0.0",
     info: {
-        version: "1.0.0",
-        title: "Operix API",
-        description: "API do sistema de gestão inteligente para serviços técnicos e manutenções (Operix).",
-        contact: {
-          name: 'João Pedro P. Lima',
-          url: 'https://joaopedrosh.github.io/website',
-          email: 'devx.contato@gmail.com',
-        },
+      version: "1.0.0",
+      title: "Operix API",
+      description: "API do sistema de gestão inteligente para serviços técnicos e manutenções (Operix).",
+      contact: {
+        name: 'João Pedro P. Lima',
+        url: 'https://joaopedrosh.github.io/website',
+        email: 'devx.contato@gmail.com',
       },
-      servers: [
-        {
-          url: 'http://localhost:3333',
-          description: 'Desenvolvimento'
-        },
-        {
-          url: 'https://operix-service-api.cloudx.work',
-          description: "Produção"
-        }
-      ],
+    },
+    servers: [
+      {
+        url: 'http://localhost:3333',
+        description: 'Desenvolvimento'
+      },
+      {
+        url: 'https://operix-service-api.cloudx.work',
+        description: "Produção"
+      }
+    ],
   });
 }

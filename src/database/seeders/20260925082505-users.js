@@ -9,6 +9,7 @@ export default {
           username: process.env.SEEDER_ADMIN_USERNAME,
           email: process.env.SEEDER_ADMIN_EMAIL,
           password: process.env.SEEDER_ADMIN_PASSWORD,
+          root: process.env.SEEDER_ROOT_PERMISSION,
           admin: process.env.SEEDER_ADMIN_PERMISSION,
           createdAt: Sequelize.fn("NOW"),
           updatedAt: Sequelize.fn("NOW"),

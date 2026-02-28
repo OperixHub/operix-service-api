@@ -9,18 +9,19 @@ import OrderOfServiceController from './controllers/OrderOfServiceController.js'
 import StatusPaymentController from './controllers/StatusPaymentController.js';
 import StatusServiceController from './controllers/StatusServiceController.js';
 import TypesProductController from './controllers/TypesProductController.js';
-import PanelControlController from './controllers/PanelControlController.js';
 import PanelAnalyticalController from './controllers/PanelAnalyticalController.js';
 import ToolsController from './controllers/ToolsController.js';
 import ExpensesController from './controllers/ExpensesController.js';
+import TenantsController from './controllers/TenantsController';
 
 import AuthMiddleware from './middlewares/AuthMiddleware';
-import ServicesMiddleware from './middlewares/ServicesMiddleware.js';
-import OrderOfServiceMiddleware from './middlewares/OrderOfServiceMiddleware.js';
-import StatusPaymentMiddleware from './middlewares/StatusPaymentMiddleware.js';
-import StatusServiceMiddleware from './middlewares/StatusServiceMiddleware.js';
-import TypesProductMiddleware from './middlewares/TypesProductMiddleware.js';
-import ExpensesMiddleware from './middlewares/ExpensesMiddleware.js';
+import ServicesMiddleware from './middlewares/ServicesMiddleware';
+import OrderOfServiceMiddleware from './middlewares/OrderOfServiceMiddleware';
+import StatusPaymentMiddleware from './middlewares/StatusPaymentMiddleware';
+import StatusServiceMiddleware from './middlewares/StatusServiceMiddleware';
+import TypesProductMiddleware from './middlewares/TypesProductMiddleware';
+import ExpensesMiddleware from './middlewares/ExpensesMiddleware';
+import TenantsMiddleware from './middlewares/TenantsMiddleware';
 
 import ValidateMiddleware from "./middlewares/ValidateMiddleware";
 
@@ -46,390 +47,189 @@ router.post(
 router.get(
   '/users', AuthMiddleware.authToken,
   UsersController.getAll
-  /*
-    #swagger.tags = ['Usuários']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.get(
   '/users/signature/:id',
   AuthMiddleware.authToken,
   UsersController.getSignature
-  /*
-    #swagger.tags = ['Usuários']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.delete(
   '/users/:id', AuthMiddleware.authToken,
   UsersController.remove
-  /*
-    #swagger.tags = ['Usuários']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
+);
+
+router.get('/tenants', AuthMiddleware.authToken,
+  TenantsController.getAll
+);
+
+router.post('/tenants', AuthMiddleware.authToken,
+  ValidateMiddleware.validateSchema(TenantsMiddleware.createSchema),
+  TenantsController.create
+);
+
+router.delete('/tenants/:id', AuthMiddleware.authToken,
+  TenantsController.remove
 );
 
 router.get(
   '/expenses', AuthMiddleware.authToken,
   ExpensesController.getAll
-  /*
-    #swagger.tags = ['Despesas']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.post(
   '/expenses', AuthMiddleware.authToken,
-  ExpensesMiddleware.validateCreate,
+  ValidateMiddleware.validateSchema(ExpensesMiddleware.createSchema),
   ExpensesController.create
-  /*
-    #swagger.tags = ['Despesas']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.delete(
   '/expenses/:id', AuthMiddleware.authToken,
   ExpensesController.remove
-  /*
-    #swagger.tags = ['Despesas']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.get(
   '/services', AuthMiddleware.authToken,
   ServicesController.getAll
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.get(
   '/services/warehouse',
   AuthMiddleware.authToken,
   ServicesController.getAllWharehouse
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.post(
   '/services',
   AuthMiddleware.authToken,
-  ServicesMiddleware.validateCreate,
+  ValidateMiddleware.validateSchema(ServicesMiddleware.createSchema),
   ServicesController.create
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.put(
   '/services/warehouse/:id/:value',
   AuthMiddleware.authToken,
   ServicesController.updateWarehouse
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.put(
   '/services/info/client/:id',
   AuthMiddleware.authToken,
-  ServicesMiddleware.validateUpdateInfoClient,
+  ValidateMiddleware.validateSchema(ServicesMiddleware.updateInfoClientSchema),
   ServicesController.updateInfoClient
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.put(
   '/services/status/:id/:status',
   AuthMiddleware.authToken,
   ServicesController.updateStatusService
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.put(
   '/services/status/payment/:id/:status',
   AuthMiddleware.authToken,
   ServicesController.updateStatusPayment
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.delete(
   '/services/:id/:cod/:typeTable',
   AuthMiddleware.authToken,
   ServicesController.remove
-  /*
-    #swagger.tags = ['Serviços']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
-
-
 
 router.get(
   '/order_of_service/',
   AuthMiddleware.authToken,
   OrderOfServiceController.getAll
-  /*
-    #swagger.tags = ['Ordens de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.get(
   '/order_of_service/:cod',
   AuthMiddleware.authToken,
   OrderOfServiceController.getUnique
-  /*
-    #swagger.tags = ['Ordens de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.put(
   '/order_of_service/estimate/:cod',
   AuthMiddleware.authToken,
-  OrderOfServiceMiddleware.validateUpdateEstimate,
+  ValidateMiddleware.validateSchema(OrderOfServiceMiddleware.updateEstimateSchema),
   OrderOfServiceController.updateEstimate
-  /*
-    #swagger.tags = ['Ordens de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.delete(
   '/order_of_service/estimate/:cod/:idEstimate',
   AuthMiddleware.authToken,
   OrderOfServiceController.removeEstimate
-  /*
-    #swagger.tags = ['Ordens de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
-
-
 
 router.get(
   '/status_payment',
   AuthMiddleware.authToken,
   StatusPaymentController.getAll
-  /*
-    #swagger.tags = ['Status de Pagamento']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.post(
   '/status_payment',
   AuthMiddleware.authToken,
-  StatusPaymentMiddleware.validateCreate,
+  ValidateMiddleware.validateSchema(StatusPaymentMiddleware.createSchema),
   StatusPaymentController.create
-  /*
-    #swagger.tags = ['Status de Pagamento']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.delete(
   '/status_payment/:id',
   AuthMiddleware.authToken,
   StatusPaymentController.remove
-  /*
-    #swagger.tags = ['Status de Pagamento']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
-
-
 
 router.get(
   '/status_service',
   AuthMiddleware.authToken,
   StatusServiceController.getAll
-  /*
-    #swagger.tags = ['Status de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.post(
   '/status_service',
   AuthMiddleware.authToken,
-  StatusServiceMiddleware.validateCreate,
+  ValidateMiddleware.validateSchema(StatusServiceMiddleware.createSchema),
   StatusServiceController.create
-  /*
-    #swagger.tags = ['Status de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.delete(
   '/status_service/:id',
   AuthMiddleware.authToken,
   StatusServiceController.remove
-  /*
-    #swagger.tags = ['Status de Serviço']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
-
 
 router.get(
   '/types_product',
   AuthMiddleware.authToken,
   TypesProductController.getAll
-  /*
-    #swagger.tags = ['Tipos de Produtos']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.post(
   '/types_product',
   AuthMiddleware.authToken,
-  TypesProductMiddleware.validateCreate,
+  ValidateMiddleware.validateSchema(TypesProductMiddleware.createSchema),
   TypesProductController.create
-  /*
-    #swagger.tags = ['Tipos de Produtos']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
+
 router.delete(
   '/types_product/:id',
   AuthMiddleware.authToken,
   TypesProductController.remove
-  /*
-    #swagger.tags = ['Tipos de Produtos']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
-);
-
-
-router.get(
-  '/panel_control/product_by_service',
-  AuthMiddleware.authToken,
-  PanelControlController.getCountProductByService
-  /*
-    #swagger.tags = ['Paineis de Controle']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
-);
-
-router.get(
-  '/panel_control/status_by_service',
-  AuthMiddleware.authToken,
-  PanelControlController.getCountStatusByService
-  /*
-    #swagger.tags = ['Paineis de Controle']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
-);
-
-router.get(
-  '/panel_control/status_payment_by_service',
-  AuthMiddleware.authToken,
-  PanelControlController.getCountStatusPaymentByService
-  /*
-    #swagger.tags = ['Paineis de Controle']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
-);
-
-router.get(
-  '/panel_control/info_performace_yearly',
-  AuthMiddleware.authToken,
-  PanelControlController.getInfoPerformaceYearly
-  /*
-    #swagger.tags = ['Paineis de Controle']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.get(
   '/panel_analytical/info_values_os_paid',
   AuthMiddleware.authToken,
   PanelAnalyticalController.getSumValuesOrdersPaid
-  /*
-    #swagger.tags = ['Paineis de Analíticos']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 router.get(
   '/panel_analytical/info_invoicing_liquid',
   AuthMiddleware.authToken,
   PanelAnalyticalController.getValuesInvoicingLiquid
-  /*
-    #swagger.tags = ['Paineis de Analíticos']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 
@@ -437,12 +237,6 @@ router.get(
   '/tools/notifications',
   AuthMiddleware.authToken,
   ToolsController.getNotifications
-  /*
-    #swagger.tags = ['Utilitários']
-    #swagger.security = [{
-      'bearerAuth': []
-    }] 
-  */
 );
 
 export default router;
