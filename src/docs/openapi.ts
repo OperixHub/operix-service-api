@@ -12,6 +12,7 @@ import StatusPayment from "../models/StatusPayment";
 import StatusService from "../models/StatusService";
 import TypeProduct from "../models/TypesProduct";
 import Tenant from "../models/Tenants";
+import Stock from "../models/Stock";
 
 const registry = new OpenAPIRegistry();
 
@@ -23,6 +24,7 @@ registry.register("StatusPayment", StatusPayment.schema);
 registry.register("StatusService", StatusService.schema);
 registry.register("TypeProduct", TypeProduct.schema);
 registry.register("Tenant", Tenant.schema);
+registry.register("Stock", Stock.schema);
 
 registry.registerComponent("securitySchemes", "bearerAuth", {
   type: "http",
@@ -364,6 +366,51 @@ registry.registerPath({
 });
 
 // ========================
+// STOCK
+// ========================
+
+registry.registerPath({
+  method: "get",
+  path: "/stock",
+  tags: ["Estoque"],
+  security,
+  responses: { 200: { content: { "application/json": { schema: Stock.schema } }, description: "Estoque listado" } }
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/stock",
+  tags: ["Estoque"],
+  security,
+  request: {
+    body: {
+      content: { "application/json": { schema: Stock.createSchema } },
+      required: true,
+    }
+  },
+  responses: { 201: { content: { "application/json": { schema: Stock.schema } }, description: "Estoque criado" } }
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/stock/{id}",
+  tags: ["Estoque"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Estoque atualizado" } }
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/stock/{id}",
+  tags: ["Estoque"],
+  security,
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: { description: "Estoque deletado" } }
+});
+
+
+// ========================
 // TOOLS
 // ========================
 
@@ -395,10 +442,6 @@ export function generateOpenApiDocument() {
       {
         url: 'http://localhost:3333',
         description: 'Desenvolvimento'
-      },
-      {
-        url: 'https://operix-service-api.cloudx.work',
-        description: "Produção"
       }
     ],
   });
