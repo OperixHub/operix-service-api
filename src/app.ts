@@ -27,9 +27,9 @@ app.use(cors({
   allowedHeaders: ['Origin', 'X-Requested-With', 'Authorization', 'Content-Type', 'Accept']
 }));
 
-app.use((_req: Request, res: Response, next: NextFunction) => {
-  next();
-});
+import LogMiddleware from './middlewares/LogMiddleware.js';
+
+app.use(LogMiddleware.handle);
 
 app.use(router);
 

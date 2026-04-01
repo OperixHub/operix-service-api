@@ -2,7 +2,6 @@
 import UsersRepository from "../repositories/UsersRepository.js";
 import ValidationError from "../utils/ValidationError.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 
 export default class UsersService {
   static async getAll(tenant_id) {

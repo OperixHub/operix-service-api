@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import ServicesService from "../services/ServicesService.js";
 import ResponseHandler from "../utils/ResponseHandler.js";
 import Service from "../models/Services.js";
+import MessagingService from "../services/MessagingService.js";
 
 export default class ServicesController {
   static async getAll(req: Request, res: Response) {
@@ -20,6 +21,7 @@ export default class ServicesController {
     const { tenant_id } = (req as any).user;
     const serviceData = Service.fromRequest({ ...req.body, tenant_id });
     const created = await ServicesService.create(serviceData);
+    MessagingService.notifyTenant(tenant_id, "@service/created", created);
     return ResponseHandler.success(res, created, "Serviço criado com sucesso", 201);
   }
 
@@ -43,6 +45,7 @@ export default class ServicesController {
     const { id, status } = req.params;
     const { typeTable } = req.body;
     const result = await ServicesService.updateStatusService(id, tenant_id, status, typeTable);
+    MessagingService.notifyTenant(tenant_id, "@service/status_updated", { id, status, result });
     return ResponseHandler.success(res, result, "Status do serviço atualizado com sucesso");
   }
 
@@ -51,6 +54,7 @@ export default class ServicesController {
     const { id, status } = req.params;
     const { typeTable } = req.body;
     const result = await ServicesService.updateStatusPayment(id, tenant_id, status, typeTable);
+    MessagingService.notifyTenant(tenant_id, "@service/payment_updated", { id, status, result });
     return ResponseHandler.success(res, result, "Status do pagamento atualizado com sucesso");
   }
 

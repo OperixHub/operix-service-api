@@ -72,4 +72,22 @@ export default class Stock {
     purchasePrice: z.number().openapi({ example: 2.5 }),
     salePrice: z.number().openapi({ example: 5.0 }),
   }).openapi("StockCreate");
+
+  static fromRequestParams(params: any = {}) {
+    return new Stock({
+      id: params.id
+    });
+  }
+
+  static responseSchema = z.object({
+    success: z.boolean(),
+    msg: z.string(),
+    data: Stock.schema
+  }).openapi("StockResponse");
+
+  static listResponseSchema = z.object({
+    success: z.boolean(),
+    msg: z.string(),
+    data: z.array(Stock.schema)
+  }).openapi("StockListResponse");
 }
