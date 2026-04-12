@@ -41,6 +41,11 @@ export default class TenantModel {
       keycloak_group_id: z.string().nullable().optional()
     }).openapi('Tenant');
 
+  static createSchema = z.object(
+    {
+      name: z.string().min(1, 'Campo "Nome" é obrigatório.')
+    }).openapi('TenantCreate');
+
   static responseSchema = z.object(
     {
       success: z.boolean(),

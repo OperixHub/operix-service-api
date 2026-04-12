@@ -1,7 +1,7 @@
-import UserModel from "../../modules/organization/users/users.model.js";
-import UsersRepository from "../../modules/organization/users/users.repository.js";
-import TenantModel from "../../modules/organization/tenants/tenants.model.js";
-import TenantRepository from "../../modules/organization/tenants/tenants.repository.js";
+import UserModel from "../identity/users/users.model.js";
+import UsersRepository from "../identity/users/users.repository.js";
+import TenantModel from "../identity/tenants/tenants.model.js";
+import TenantRepository from "../identity/tenants/tenants.repository.js";
 
 interface Group {
   id: string;
@@ -15,59 +15,72 @@ export default class AuthService {
   static readonly REALM = process.env.KEYCLOAK_REALM || 'operix-service';
 
   static async login(username: string, password: string) {
-    const response = await fetch(`${this.KEYCLOAK_URL}/realms/${this.REALM}/protocol/openid-connect/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.KEYCLOAK_CLIENT_ID || 'admin-cli',
-        grant_type: 'password',
-        username,
-        password
-      }).toString()
-    });
+    try {
+      const response = await fetch(`${this.KEYCLOAK_URL}/realms/${this.REALM}/protocol/openid-connect/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: process.env.KEYCLOAK_CLIENT_ID || 'admin-cli',
+          grant_type: 'password',
+          username,
+          password
+        }).toString()
+      });
 
-    if (!response.ok) {
-      throw new Error('Credenciais inválidas ou erro no serviço de autenticação.');
+      if (!response.ok) {
+        throw new Error('Credenciais inválidas ou erro no serviço de autenticação.');
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Erro ao realizar login no Keycloak.');
     }
-
-    const data = await response.json();
-    return data;
   }
 
   static async getAdminToken() {
-    const response = await fetch(`${this.KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: 'admin-cli',
-        grant_type: 'password',
-        username: 'admin',
-        password: 'admin'
-      }).toString()
-    });
+    try {
+      const response = await fetch(`${this.KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: 'admin-cli',
+          grant_type: 'password',
+          username: process.env.KEYCLOAK_ADMIN_USER || 'admin',
+          password: process.env.KEYCLOAK_ADMIN_PASSWORD || 'admin'
+        }).toString()
+      });
 
-    if (!response.ok) throw new Error('Não foi possível autenticar a administração.');
-    const data = await response.json();
-    return (data as any).access_token;
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Não foi possível autenticar a administração: ${error}`);
+      }
+      const data: any = await response.json();
+      return data.access_token;
+    } catch (error: any) {
+      throw new Error(`Falha ao obter token de admin: ${error.message}`);
+    }
   }
 
   static async refreshToken(refreshToken: string) {
-    const response = await fetch(`${this.KEYCLOAK_URL}/realms/${this.REALM}/protocol/openid-connect/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.KEYCLOAK_CLIENT_ID || 'admin-cli',
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken
-      }).toString()
-    });
+    try {
+      const response = await fetch(`${this.KEYCLOAK_URL}/realms/${this.REALM}/protocol/openid-connect/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: process.env.KEYCLOAK_CLIENT_ID || 'admin-cli',
+          grant_type: 'refresh_token',
+          refresh_token: refreshToken
+        }).toString()
+      });
 
-    if (!response.ok) {
-      throw new Error('Falha ao renovar o token. Faça login novamente.');
+      if (!response.ok) {
+        throw new Error('Falha ao renovar o token. Faça login novamente.');
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      throw new Error(error.message || 'Erro ao renovar token no Keycloak.');
     }
-
-    const data = await response.json();
-    return data;
   }
 
   static async findGroupByName(groupName: string, adminToken: string): Promise<Group | null> {
@@ -86,8 +99,7 @@ export default class AuthService {
     }
 
     const groups = await response.json() as Group[];
-    const exactMatch = groups.find(g => g.name === groupName);
-    return exactMatch || null;
+    return groups.find(g => g.name === groupName) || null;
   }
 
   static async createGroup(groupName: string, adminToken: string, attributes?: Record<string, string[]>): Promise<string> {
@@ -153,8 +165,8 @@ export default class AuthService {
     let groupId: string;
     try {
       groupId = await this.ensureGroupExists(groupName, adminToken);
-    } catch (error) {
-      throw new Error('Não foi possível criar/verificar o grupo da filial.');
+    } catch (error: any) {
+      throw new Error(`Não foi possível criar/verificar o grupo da filial: ${error.message}`);
     }
 
     const createUserResponse = await fetch(`${this.KEYCLOAK_URL}/admin/realms/${this.REALM}/users`, {
@@ -193,19 +205,32 @@ export default class AuthService {
     }
 
     const userId = location.split('/').pop()!;
+    console.log(`[AuthService] Usuário criado no Keycloak com ID: ${userId}`);
     await this.addUserToGroup(userId, groupId, adminToken);
 
-    const tenant = TenantModel.fromRequest({
-      id: null,
-      name: data.tenant,
-      keycloak_group_id: groupId,
-    });
-    const createTenant = await TenantRepository.create(tenant);
+    // DEDUPLICATON: Check if tenant exists in DB first
+    let dbTenant = await TenantRepository.findByKeycloakGroupId(groupId);
+    if (!dbTenant) {
+      console.log(`[AuthService] Criando nova empresa: ${data.tenant}`);
+      const tenant = TenantModel.fromRequest({
+        id: null,
+        name: data.tenant,
+        keycloak_group_id: groupId,
+      });
+      dbTenant = await TenantRepository.create(tenant);
+      
+      // Auto-cadastro de nova empresa -> Primeiro usuário é administrador
+      data.admin = true;
+      data.root = true;
+    } else {
+      console.log(`[AuthService] Registrando usuário em empresa existente: ${data.tenant}`);
+    }
 
-    data.tenant_id = createTenant.id;
+    data.tenant_id = dbTenant.id;
     data.keycloak_id = userId;
-    data.password = '';
+    data.password = ''; 
 
+    console.log(`[AuthService] Persistindo usuário no banco local... ID Keycloak: ${data.keycloak_id}`);
     return await UsersRepository.create(data);
   }
 }

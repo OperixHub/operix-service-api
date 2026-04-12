@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import TenantsService from './tenants.service.js';
-import ResponseHandler from '../../../core/utils/response-handler.js';
+import ResponseHandler from '../../utils/response-handler.js';
 import TenantModel from './tenants.model.js';
 
 export default class TenantsController {

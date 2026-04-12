@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import UsersService from './users.service.js';
 import UserModel from './users.model.js';
-import ResponseHandler from '../../../core/utils/response-handler.js';
+import ResponseHandler from '../../utils/response-handler.js';
 
 export default class UsersController {
   static async getAll(req: Request, res: Response) {

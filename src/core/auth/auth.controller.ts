@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
 import AuthService from './auth.service.js';
-import ResponseHandler from '../../core/utils/response-handler.js';
+import ResponseHandler from '../utils/response-handler.js';
 import jwt from 'jsonwebtoken';
-import UserModel from '../../modules/organization/users/users.model.js';
+import UserModel from '../identity/users/users.model.js';
+import UsersRepository from '../identity/users/users.repository.js';
 
 export default class AuthController {
   static async login(req: Request, res: Response) {
@@ -11,15 +12,21 @@ export default class AuthController {
       const data = await AuthService.login(username, password);
 
       const decoded: any = jwt.decode((data as any).access_token);
+      
+      const localUser = await UsersRepository.findByKeycloakId(decoded?.sub);
+      const roles: string[] = decoded?.realm_access?.roles || [];
 
       return ResponseHandler.success(res, {
         token: (data as any).access_token,
         refresh_token: (data as any).refresh_token,
         user: {
-          id: decoded?.sub,
+          id: localUser?.id || decoded?.sub,
+          name: localUser?.name || decoded?.name || decoded?.preferred_username || username,
           username: decoded?.preferred_username || username,
           email: decoded?.email,
-          tenant_id: decoded?.tenant_id ? Number(decoded.tenant_id) : 1
+          tenant_id: localUser?.tenant_id || (decoded?.tenant_id ? Number(decoded.tenant_id) : 1),
+          admin: localUser?.admin || roles.includes('admin') || roles.includes('ADMIN'),
+          roles: roles
         }
       }, 'Login realizado com sucesso.');
     } catch (e: any) {

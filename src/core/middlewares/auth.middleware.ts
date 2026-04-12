@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import ResponseHandler from '../utils/response-handler.js';
 import connection from '../database/connection.js';
+import UsersRepository from '../identity/users/users.repository.js';
+import UserModel from '../identity/users/users.model.js';
 
 const client = jwksClient({
   jwksUri: process.env.KEYCLOAK_JWKS_URI || `http://localhost:8080/realms/${process.env.KEYCLOAK_REALM || 'operix-service'}/protocol/openid-connect/certs`,
@@ -39,33 +41,44 @@ const jwtVerifyOptions = {
 };
 
 async function provisionUser(decoded: any): Promise<any> {
-  console.log(decoded);
   const keycloakId = decoded.sub;
   const email = decoded.email || decoded.preferred_username || decoded.sub;
-  const username = decoded.username || decoded.email || decoded.sub;
-  const tenantId = decoded.tenant_id ? Number(decoded.tenant_id) : 1;
+  const username = decoded.username || decoded.preferred_username || decoded.email || decoded.sub;
 
-  const connect = await connection.connect();
   try {
-    const byKcId = await connect.query(
-      'SELECT * FROM users WHERE keycloak_id = $1',
-      [keycloakId]
-    );
-    if (byKcId.rows.length > 0) return byKcId.rows[0];
+    const byKcId = await UsersRepository.findByKeycloakId(keycloakId);
+    if (byKcId) return byKcId;
 
-    const byEmail = await connect.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
-    if (byEmail.rows.length > 0) {
-      await connect.query(
-        'UPDATE users SET keycloak_id = $1 WHERE id = $2',
-        [keycloakId, byEmail.rows[0].id]
-      );
-      return { ...byEmail.rows[0], keycloak_id: keycloakId };
+    const byEmail = await UsersRepository.findByEmail(email);
+    if (byEmail) {
+      // Link as contas se o email bater
+      const connect = await connection.connect();
+      try {
+        await connect.query('UPDATE users SET keycloak_id = $1 WHERE id = $2', [keycloakId, byEmail.id]);
+      } finally {
+        connect.release();
+      }
+      return { ...byEmail, keycloak_id: keycloakId };
     }
-  } finally {
-    connect.release();
+
+    // Provisionamento Automático (Caso não exista e seja login SSO válido)
+    const tenantId = decoded.tenant_id ? Number(decoded.tenant_id) : 1;
+    const name = decoded.name || username;
+
+    const newUser = new UserModel({
+      tenant_id: tenantId,
+      name,
+      username,
+      email,
+      keycloak_id: keycloakId,
+      root: false,
+      admin: false
+    });
+
+    return await UsersRepository.create(newUser);
+  } catch (error) {
+    console.error('Erro ao provisionar usuário:', error);
+    return null;
   }
 }
 
@@ -81,6 +94,18 @@ export default class AuthMiddleware {
         try {
           const user = await provisionUser(decoded);
           const roles: string[] = decoded.realm_access?.roles || [];
+
+          if (!user) {
+            // Fallback se o provisionamento falhou
+            return resolve({
+              id: null,
+              keycloak_id: decoded.sub,
+              username: decoded.preferred_username || decoded.sub,
+              email: decoded.email,
+              roles,
+              tenant_id: decoded.tenant_id ? Number(decoded.tenant_id) : 1,
+            });
+          }
 
           resolve({
             ...user,
