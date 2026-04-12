@@ -9,7 +9,10 @@ export default class RolesMiddleware {
     return (req: Request, res: Response, next: NextFunction) => {
       const userRoles: string[] = (req as any).user?.roles || [];
 
+      console.log('userRoles', userRoles)
+      console.log('requiredRoles', requiredRoles)
       const hasAll = requiredRoles.every(role => userRoles.includes(role));
+      console.log('hasAll', hasAll)
       if (!hasAll) {
         return ResponseHandler.error(
           res,

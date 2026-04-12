@@ -12,9 +12,11 @@ dotenv.config();
 
 const app = express();
 const server: HttpServer = createServer(app);
+const origins = process.env.ORIGIN ? process.env.ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'];
+
 const io: SocketServer = new Server(server, {
   cors: {
-    origin: process.env.ORIGIN,
+    origin: origins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -23,7 +25,7 @@ const io: SocketServer = new Server(server, {
 
 app.use(json());
 app.use(cors({
-  origin: process.env.ORIGIN,
+  origin: origins,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Authorization', 'Content-Type', 'Accept']
 }));
@@ -32,12 +34,10 @@ app.use(LogMiddleware.handle);
 
 app.use(router);
 
-// 404 Handler - Para rotas não encontradas
 app.use((_req: Request, res: Response) => {
   return ResponseHandler.error(res, 'Rota não encontrada', 404);
 });
 
-// Global Error Handler - Captura todas as exceções não tratadas
 app.use(GlobalErrorHandler.handle);
 
 export { server, io, app };

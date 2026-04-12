@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import RolesMiddleware from '../../core/middlewares/roles.middleware.js';
+import RolesMiddleware from '../middlewares/roles.middleware.js';
 import UsersController from './users/users.controller.js';
 import TenantsController from './tenants/tenants.controller.js';
 import TenantModel from './tenants/tenants.model.js';
-import ValidateMiddleware from '../../core/middlewares/validate.middleware.js';
+import ValidateMiddleware from '../middlewares/validate.middleware.js';
 
 const router = Router();
 router.use(RolesMiddleware.requireRole('module:organization'));

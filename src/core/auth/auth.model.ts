@@ -15,7 +15,7 @@ export default class AuthModel {
     username: z.string().min(1, 'Campo "Nome de Usuário" é obrigatório.'),
     email: z.string().email('Campo "Email" inválido.'),
     password: z.string().min(1, 'Campo "Senha" é obrigatório.'),
-    tenant_id: z.number().nullable().optional() // Opciocional via admin, ou padrão
+    tenant: z.string().min(1, 'Campo "Tenant" é obrigatório.')
   }).openapi('AuthRegister');
 
   static loginResponseSchema = z.object({
@@ -34,6 +34,12 @@ export default class AuthModel {
 
   static registerResponseSchema = z.object({
     success: z.boolean(),
-    msg: z.string()
+    msg: z.string(),
+    data: z.object({
+      user: z.object({
+        username: z.string(),
+        email: z.string().optional()
+      }).optional()
+    })
   }).openapi('AuthRegisterResponse');
 }

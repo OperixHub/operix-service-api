@@ -5,22 +5,18 @@ import { generateOpenApiDocument } from './docs/openapi.js';
 import AuthMiddleware from './middlewares/auth.middleware.js';
 import { operationalRouter } from '../modules/operational/index.js';
 import { inventoryRouter } from '../modules/inventory/index.js';
-import { organizationRouter } from '../modules/organization/index.js';
+import { identityRouter } from './identity/index.js';
 import { notificationsRouter } from '../modules/notifications/index.js';
 import authRouter from './auth/auth.routes.js';
-// Opcional: Logs controller se houver rotas para logs (adicionar depois se precisar ou já deixar provisionado)
-// import LogsController from './logs/logs.controller.js';
+import logsRouter from './logs/logs.routes.js';
 
 const router = Router();
 const openApiDocument = generateOpenApiDocument();
 
 router.use(json());
 
-// Swagger Docs (Não protegido por auth, se desejar. Mas atualmente estava na raiz)
 router.use('/docs', serve);
 router.get('/docs', setup(openApiDocument));
-
-
 
 // Rotas públicas de Autenticação/Proxy para o Keycloak
 router.use('/api/auth', authRouter);
@@ -29,10 +25,10 @@ router.use('/api/auth', authRouter);
 router.use(AuthMiddleware.authToken);
 
 // Rotas Modulares
-// prefixos baseados no dominio
 router.use('/api', operationalRouter);
 router.use('/api', inventoryRouter);
-router.use('/api', organizationRouter);
+router.use('/api/identity', identityRouter);
 router.use('/api', notificationsRouter);
+router.use('/api', logsRouter);
 
 export default router;

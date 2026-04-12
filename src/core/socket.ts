@@ -23,10 +23,10 @@ io.use(async (socket, next) => {
 
 io.on('connection', (socket) => {
   const user = (socket as any).user;
-  
+
   if (user && user.tenant_id) {
     socket.join(`tenant_${user.tenant_id}`);
   }
-  
-  socket.on('disconnect', () => {});
+
+  socket.on('disconnect', () => { });
 });

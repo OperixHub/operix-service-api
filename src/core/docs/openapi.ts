@@ -1,7 +1,7 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
 import { registerOperationalDocs } from '../../modules/operational/docs/operational.docs.js';
 import { registerInventoryDocs } from '../../modules/inventory/docs/inventory.docs.js';
-import { registerOrganizationDocs } from '../../modules/organization/docs/organization.docs.js';
+import { registerIdentityDocs } from '../identity/docs/identity.docs.js';
 import { registerNotificationsDocs } from '../../modules/notifications/docs/notifications.docs.js';
 import { registerLogsDocs } from '../logs/docs/logs.docs.js';
 import { registerAuthDocs } from '../auth/docs/auth.docs.js';
@@ -16,7 +16,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 
 registerOperationalDocs(registry);
 registerInventoryDocs(registry);
-registerOrganizationDocs(registry);
+registerIdentityDocs(registry);
 registerNotificationsDocs(registry);
 registerAuthDocs(registry);
 registerLogsDocs(registry);

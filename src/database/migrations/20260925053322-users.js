@@ -23,6 +23,10 @@ export default {
         allowNull: false,
         type: Sequelize.INTEGER,
       },
+      name: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
       username: {
         allowNull: false,
         type: Sequelize.STRING,
@@ -32,7 +36,7 @@ export default {
         type: Sequelize.STRING,
       },
       password: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING,
       },
       root: {
