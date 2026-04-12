@@ -1,7 +1,15 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -29,7 +37,7 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
     });
 
     const res = await supertest(app)
-      .get('/order_of_service/')
+      .get('/api/order-of-service/')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -43,7 +51,7 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
     });
 
     const res = await supertest(app)
-      .get('/order_of_service/OS123')
+      .get('/api/order-of-service/OS123')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -60,7 +68,7 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
     });
 
     const res = await supertest(app)
-      .put('/order_of_service/estimate/OS123')
+      .put('/api/order-of-service/estimate/OS123')
       .set('Authorization', `Bearer ${token}`)
       .send({
         description: 'New estimate',
@@ -75,11 +83,12 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
 
   test('DELETE /order_of_service/estimate/:cod/:idEstimate - sucesso', async () => {
     mockConnectWithResponses((sql) => {
+      if (sql.includes('SELECT')) return { rows: [{ id: 1, cod: 'OS123', estimate: '[{"id":1, "price":50}]' }], rowCount: 1 };
       return { rowCount: 1 };
     });
 
     const res = await supertest(app)
-      .delete('/order_of_service/estimate/OS123/1')
+      .delete('/api/order-of-service/estimate/OS123/1')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);

@@ -1,7 +1,15 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -24,7 +32,7 @@ describe('Testes de Integração - Rotas de Tenants', () => {
   const token = jwt.sign({ id: 1, username: 'u', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
   test('GET /tenants - requer autenticação', async () => {
-    const res = await supertest(app).get('/tenants');
+    const res = await supertest(app).get('/api/tenants');
     expect(res.status).toBe(401);
   });
 
@@ -35,7 +43,7 @@ describe('Testes de Integração - Rotas de Tenants', () => {
     });
 
     const res = await supertest(app)
-      .get('/tenants')
+      .get('/api/tenants')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -51,7 +59,7 @@ describe('Testes de Integração - Rotas de Tenants', () => {
     });
 
     const res = await supertest(app)
-      .post('/tenants')
+      .post('/api/tenants')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Novo Tenant' });
 
@@ -68,7 +76,7 @@ describe('Testes de Integração - Rotas de Tenants', () => {
     });
 
     const res = await supertest(app)
-      .delete('/tenants/1')
+      .delete('/api/tenants/1')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);

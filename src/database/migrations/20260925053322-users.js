@@ -2,6 +2,11 @@
 export default {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("users", {
+      keycloak_id: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+        unique: true
+      },
       tenant_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -39,10 +44,6 @@ export default {
         allowNull: true,
         defaultValue: false,
         type: Sequelize.BOOLEAN,
-      },
-      signature: {
-        allowNull: true,
-        type: Sequelize.TEXT,
       },
       createdAt: {
         allowNull: false,

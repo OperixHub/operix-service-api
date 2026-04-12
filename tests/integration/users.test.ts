@@ -1,7 +1,8 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
 
 import * as argon2 from 'argon2';
 
@@ -13,6 +14,13 @@ jest.mock('argon2', () => ({
     hash.startsWith('$argon2id$') && password === 'adminpassword'
   ))
 }));
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -34,7 +42,7 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
 
 describe('Testes de Integração - Rotas de Usuários Management', () => {
   test('GET /users - requer autenticação', async () => {
-    const res = await supertest(app).get('/users');
+    const res = await supertest(app).get('/api/users');
     expect(res.status).toBe(401);
   });
 
@@ -49,30 +57,13 @@ describe('Testes de Integração - Rotas de Usuários Management', () => {
     const token = jwt.sign({ id: 1, username: 'adminuser', admin: false, tenant_id: 1 }, process.env.SECRET as string, { expiresIn: '1d' });
 
     const res = await supertest(app)
-      .get('/users')
+      .get('/api/users')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toEqual([{ id: 1, username: 'adminuser' }]);
     expect(res.body.msg).toBe("Usuários listados com sucesso");
-  });
-
-  test('GET /users/signature/:id - autorizado retorna assinatura no campo data', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('signature') && sql.includes('FROM users')) return { rows: [{ signature: 'base64sig' }], rowCount: 1 };
-      return { rows: [], rowCount: 0 };
-    });
-
-    const token = jwt.sign({ id: 1, username: 'adminuser', admin: false, tenant_id: 1 }, process.env.SECRET as string, { expiresIn: '1d' });
-
-    const res = await supertest(app)
-      .get('/users/signature/1')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toBe('base64sig');
   });
 
   test('DELETE /users/:id - usuário não encontrado', async () => {
@@ -82,7 +73,7 @@ describe('Testes de Integração - Rotas de Usuários Management', () => {
     const token = jwt.sign({ id: 1, username: 'adminuser', admin: false, tenant_id: 1 }, process.env.SECRET as string, { expiresIn: '1d' });
 
     const res = await supertest(app)
-      .delete('/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(404);
@@ -98,7 +89,7 @@ describe('Testes de Integração - Rotas de Usuários Management', () => {
     const token = jwt.sign({ id: 1, username: 'adminuser', admin: true, tenant_id: 1 }, process.env.SECRET as string, { expiresIn: '1d' });
 
     const res = await supertest(app)
-      .delete('/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(422);
@@ -115,7 +106,7 @@ describe('Testes de Integração - Rotas de Usuários Management', () => {
     const token = jwt.sign({ id: 1, username: 'adminuser', admin: false, tenant_id: 1 }, process.env.SECRET as string, { expiresIn: '1d' });
 
     const res = await supertest(app)
-      .delete('/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);

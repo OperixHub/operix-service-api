@@ -1,0 +1,38 @@
+import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { registerOperationalDocs } from '../../modules/operational/docs/operational.docs.js';
+import { registerInventoryDocs } from '../../modules/inventory/docs/inventory.docs.js';
+import { registerOrganizationDocs } from '../../modules/organization/docs/organization.docs.js';
+import { registerNotificationsDocs } from '../../modules/notifications/docs/notifications.docs.js';
+
+const registry = new OpenAPIRegistry();
+
+registry.registerComponent('securitySchemes', 'bearerAuth', {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT', // Keycloak token
+});
+
+// Delega o registro de rotas/models para cada módulo de forma independente
+registerOperationalDocs(registry);
+registerInventoryDocs(registry);
+registerOrganizationDocs(registry);
+registerNotificationsDocs(registry);
+
+export function generateOpenApiDocument() {
+  const generator = new OpenApiGeneratorV3(registry.definitions);
+  return generator.generateDocument({
+    openapi: '3.0.0',
+    info: {
+      version: '1.0.0',
+      title: 'Operix API (Modular)',
+      description: 'API do sistema de gestão inteligente (Monolito Modular via Keycloak).',
+      contact: {
+        name: 'João Pedro P. Lima',
+        email: 'devx.contato@gmail.com',
+      },
+    },
+    servers: [
+      { url: 'http://localhost:3333/api', description: 'Desenvolvimento Backend APIs' }
+    ],
+  });
+}

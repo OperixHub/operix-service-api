@@ -1,7 +1,15 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -30,7 +38,7 @@ describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
     });
 
     const res = await supertest(app)
-      .get('/stocks')
+      .get('/api/stock')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -45,7 +53,7 @@ describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
     });
 
     const res = await supertest(app)
-      .post('/stocks')
+      .post('/api/stock')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Peça B', code: 'PB001', quantity: 5, purchasePrice: 10, salePrice: 20 });
 
@@ -61,7 +69,7 @@ describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
     });
 
     const res = await supertest(app)
-      .put('/stocks/1')
+      .put('/api/stock/1')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Peça A', code: 'PA001', quantity: 15, purchasePrice: 12, salePrice: 22 });
 
@@ -77,7 +85,7 @@ describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
     });
 
     const res = await supertest(app)
-      .delete('/stocks/1')
+      .delete('/api/stock/1')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);

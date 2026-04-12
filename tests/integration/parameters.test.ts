@@ -1,7 +1,15 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -26,7 +34,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
   // Status Payment
   test('GET /status_payment - sucesso', async () => {
     mockConnectWithResponses(() => ({ rows: [{ id: 1, status: 'Paid' }], rowCount: 1 }));
-    const res = await supertest(app).get('/status_payment').set('Authorization', `Bearer ${token}`);
+    const res = await supertest(app).get('/api/status-payment').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Status de pagamento listados com sucesso");
@@ -37,7 +45,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
       if (sql.startsWith('INSERT INTO status_payment')) return { rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
-    const res = await supertest(app).post('/status_payment').set('Authorization', `Bearer ${token}`).send({ status: 'Pending' });
+    const res = await supertest(app).post('/api/status-payment').set('Authorization', `Bearer ${token}`).send({ description: 'Pending', cod: 1, color: '#000' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Status de pagamento criado com sucesso");
@@ -46,7 +54,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
   // Status Service
   test('GET /status_service - sucesso', async () => {
     mockConnectWithResponses(() => ({ rows: [{ id: 1, status: 'In Progress' }], rowCount: 1 }));
-    const res = await supertest(app).get('/status_service').set('Authorization', `Bearer ${token}`);
+    const res = await supertest(app).get('/api/status-service').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Status de serviço listados com sucesso");
@@ -57,7 +65,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
       if (sql.startsWith('INSERT INTO status_service')) return { rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
-    const res = await supertest(app).post('/status_service').set('Authorization', `Bearer ${token}`).send({ status: 'Done' });
+    const res = await supertest(app).post('/api/status-service').set('Authorization', `Bearer ${token}`).send({ description: 'Done', color: '#000' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Status de serviço criado com sucesso");
@@ -66,7 +74,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
   // Types Product
   test('GET /types_product - sucesso', async () => {
     mockConnectWithResponses(() => ({ rows: [{ id: 1, type: 'Electronics' }], rowCount: 1 }));
-    const res = await supertest(app).get('/types_product').set('Authorization', `Bearer ${token}`);
+    const res = await supertest(app).get('/api/types-product').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Tipos de produto listados com sucesso");
@@ -77,7 +85,7 @@ describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () =>
       if (sql.startsWith('INSERT INTO types_product')) return { rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
-    const res = await supertest(app).post('/types_product').set('Authorization', `Bearer ${token}`).send({ type: 'Grocery' });
+    const res = await supertest(app).post('/api/types-product').set('Authorization', `Bearer ${token}`).send({ name: 'Grocery' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.msg).toBe("Tipo de produto criado com sucesso");
