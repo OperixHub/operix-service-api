@@ -3,20 +3,23 @@ import { registerOperationalDocs } from '../../modules/operational/docs/operatio
 import { registerInventoryDocs } from '../../modules/inventory/docs/inventory.docs.js';
 import { registerOrganizationDocs } from '../../modules/organization/docs/organization.docs.js';
 import { registerNotificationsDocs } from '../../modules/notifications/docs/notifications.docs.js';
+import { registerLogsDocs } from '../logs/docs/logs.docs.js';
+import { registerAuthDocs } from '../auth/docs/auth.docs.js';
 
 const registry = new OpenAPIRegistry();
 
 registry.registerComponent('securitySchemes', 'bearerAuth', {
   type: 'http',
   scheme: 'bearer',
-  bearerFormat: 'JWT', // Keycloak token
+  bearerFormat: 'JWT',
 });
 
-// Delega o registro de rotas/models para cada módulo de forma independente
 registerOperationalDocs(registry);
 registerInventoryDocs(registry);
 registerOrganizationDocs(registry);
 registerNotificationsDocs(registry);
+registerAuthDocs(registry);
+registerLogsDocs(registry);
 
 export function generateOpenApiDocument() {
   const generator = new OpenApiGeneratorV3(registry.definitions);
