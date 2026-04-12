@@ -1,7 +1,15 @@
 import supertest from 'supertest';
-import { app } from '../../src/app';
-import connection from '../../src/database/connection';
+import { app } from '../../src/core/app';
+import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+
+
+beforeAll(() => {
+  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+  });
+});
 
 beforeAll(() => {
   process.env.SECRET = 'testsecret';
@@ -30,7 +38,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
     });
 
     const res = await supertest(app)
-      .get('/services')
+      .get('/api/services')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -44,7 +52,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
     });
 
     const res = await supertest(app)
-      .get('/services/warehouse')
+      .get('/api/services/warehouse')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -55,17 +63,19 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
 
   test('POST /services - sucesso ao criar', async () => {
     mockConnectWithResponses((sql) => {
+      if (sql.startsWith('INSERT INTO order_of_service')) return { rows: [{ cod_order: 'OS123' }], rowCount: 1 };
       if (sql.startsWith('INSERT INTO services')) return { rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 
     const res = await supertest(app)
-      .post('/services')
+      .post('/api/services')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        name: 'Maintenance',
-        value_service: 150,
-        type_table: 'OS'
+        product: 'Maintenance',
+        client: 'John',
+        telephone: '123456',
+        status: 1
       });
 
     expect(res.status).toBe(201);
@@ -79,7 +89,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
     });
 
     const res = await supertest(app)
-      .put('/services/warehouse/1/20')
+      .put('/api/services/warehouse/1/20')
       .set('Authorization', `Bearer ${token}`)
       .send({ typeTable: 'OS' });
 
@@ -93,16 +103,17 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
     });
 
     const res = await supertest(app)
-      .put('/services/info/client/1')
+      .put('/api/services/info/client/1')
       .set('Authorization', `Bearer ${token}`)
       .send({
-        client_name: 'John Doe',
-        client_phone: '123456789'
+        product: 'Maintenance',
+        client: 'John Doe',
+        telephone: '123456789'
       });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Informações de cliente atualizadas com sucesso");
+    expect(res.body.msg).toBe("Informações do cliente atualizadas com sucesso");
   });
 
   test('DELETE /services/:id/:cod/:typeTable - sucesso', async () => {
@@ -111,7 +122,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
     });
 
     const res = await supertest(app)
-      .delete('/services/1/COD123/OS')
+      .delete('/api/services/1/COD123/OS')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);

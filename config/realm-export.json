@@ -7,9 +7,33 @@
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
-  "resetPasswordAllowed": false,
+  "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
-  "bruteForceProtected": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "module:operational",    "description": "Acesso ao módulo de gestão operacional (serviços, OS, status, tipos de produto)", "composite": false },
+      { "name": "module:inventory",      "description": "Acesso ao módulo de estoque", "composite": false },
+      { "name": "module:organization",   "description": "Acesso ao módulo de organização (usuários e unidades)", "composite": false },
+      { "name": "module:notifications",  "description": "Acesso ao módulo de notificações e alertas", "composite": false },
+      {
+        "name": "role:admin",
+        "description": "Administrador — acesso completo a todos os módulos",
+        "composite": true,
+        "composites": {
+          "realm": ["module:operational", "module:inventory", "module:organization", "module:notifications"]
+        }
+      },
+      {
+        "name": "role:operator",
+        "description": "Operador — acesso operacional sem administração",
+        "composite": true,
+        "composites": {
+          "realm": ["module:operational", "module:inventory", "module:notifications"]
+        }
+      }
+    ]
+  },
   "users": [
     {
       "username": "usuario_teste",
@@ -18,13 +42,17 @@
       "firstName": "Teste",
       "lastName": "Operix",
       "emailVerified": true,
+      "attributes": {
+        "tenant_id": ["1"]
+      },
       "credentials": [
         {
           "type": "password",
           "value": "senha123",
           "temporary": false
         }
-      ]
+      ],
+      "realmRoles": ["role:admin"]
     }
   ],
   "clients": [
@@ -32,13 +60,31 @@
       "clientId": "operix-app",
       "enabled": true,
       "publicClient": true,
-      "redirectUris": ["http://localhost:3000/*"],
-      "webOrigins": ["http://localhost:3000"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:3333/*"],
+      "webOrigins": ["http://localhost:3000", "http://localhost:3333"],
       "protocol": "openid-connect",
       "attributes": {
-        "access.token.lifespan": "300",
-        "client.secret.creation.time": "0"
-      }
+        "pkce.code.challenge.method": "S256",
+        "access.token.lifespan": "3600"
+      },
+      "protocolMappers": [
+        {
+          "name": "tenant_id-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "tenant_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "tenant_id",
+            "jsonType.label": "int"
+          }
+        }
+      ]
     }
   ],
   "keycloakVersion": "26.0.7"
