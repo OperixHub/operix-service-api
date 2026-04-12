@@ -7,5 +7,6 @@ const router = Router();
 
 router.post('/login', ValidateMiddleware.validateSchema(AuthModel.loginSchema), AuthController.login);
 router.post('/register', ValidateMiddleware.validateSchema(AuthModel.registerSchema), AuthController.register);
+router.post('/refresh', ValidateMiddleware.validateSchema(AuthModel.loginSchema), AuthController.refreshToken);
 
 export default router;

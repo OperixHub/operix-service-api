@@ -11,11 +11,11 @@ class TenantsRepository {
     return result.rows;
   }
 
-  static async create(tenantname) {
+  static async create(tenant: TenantModel) {
     const connect = await connection.connect();
-    const result = await connect.query(`INSERT INTO ${this.tableName} (name) VALUES ($1)`, [tenantname]);
+    const result = await connect.query(`INSERT INTO ${this.tableName} (keycloak_group_id,name) VALUES ($1, $2) RETURNING *`, [tenant.keycloak_group_id, tenant.name]);
     connect.release();
-    return result.rowCount;
+    return result.rows[0];
   }
 
   static async remove(id) {

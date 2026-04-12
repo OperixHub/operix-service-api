@@ -2,6 +2,11 @@
 export default {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable("tenants", {
+      keycloak_group_id: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
+      },
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,

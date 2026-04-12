@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("system_logs", {
+    await queryInterface.createTable("logs", {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -13,7 +13,7 @@ export default {
         allowNull: true,
       },
       user_id: {
-        type: Sequelize.UUID,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       method: {
@@ -45,6 +45,6 @@ export default {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable("system_logs");
+    await queryInterface.dropTable("logs");
   },
 };
