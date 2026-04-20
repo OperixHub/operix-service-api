@@ -10,7 +10,7 @@ export default tseslint.config([
     extends: [...tseslint.configs.recommended],
     rules: {
       indent: ["error", 2],
-      "linebreak-style": ["error", "windows"],
+      "linebreak-style": "off",
       quotes: ["error", "single", { avoidEscape: true }],
       semi: ["error", "always"],
       "@typescript-eslint/no-unused-vars": ["warn"],

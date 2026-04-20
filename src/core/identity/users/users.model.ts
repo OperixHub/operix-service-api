@@ -63,22 +63,36 @@ export default class UserModel {
   toJSON() {
     return {
       id: this.id,
+      name: this.name,
       username: this.username,
       email: this.email,
+      tenant: this.tenant,
       tenant_id: this.tenant_id,
       keycloak_id: this.keycloak_id,
-      password: this.password,
       admin: this.admin,
       root: this.root,
-      name: this.name
     };
   }
+
+  static publicSchema = z.object(
+    {
+      id: z.number().nullable().optional(),
+      username: z.string().min(1),
+      email: z.string().email(),
+      tenant: z.string().nullable().optional(),
+      tenant_id: z.number().nullable().optional(),
+      keycloak_id: z.string().nullable().optional(),
+      admin: z.boolean().nullable().optional(),
+      root: z.boolean().nullable().optional(),
+      name: z.string().min(1)
+    }).openapi('UserPublic');
 
   static schema = z.object(
     {
       id: z.number().nullable().optional(),
       username: z.string().min(1),
       email: z.string().email(),
+      tenant: z.string().nullable().optional(),
       tenant_id: z.number().nullable().optional(),
       keycloak_id: z.string().nullable().optional(),
       password: z.string().nullable().optional(),
@@ -91,6 +105,6 @@ export default class UserModel {
     {
       success: z.boolean(),
       msg: z.string(),
-      data: z.array(UserModel.schema)
+      data: z.array(UserModel.publicSchema)
     }).openapi('UserListResponse');
 }

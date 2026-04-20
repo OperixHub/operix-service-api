@@ -5,6 +5,6 @@ import ResponseHandler from '../../../core/utils/response-handler.js';
 export default class ToolsController {
   static async getNotifications(req: Request, res: Response) {
     const { tenant_id } = (req as any).user;
-    return ResponseHandler.success(res, await ToolsService.getNotifications(tenant_id), 'Notificações obtidas com sucesso');
+    return ResponseHandler.success(res, await ToolsService.getNotifications(tenant_id), 'NotificaÃ§Ãµes obtidas com sucesso');
   }
 }

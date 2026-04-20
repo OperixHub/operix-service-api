@@ -2,7 +2,7 @@ import LogsRepository from './logs.repository.js';
 
 class LogsService {
   static async insertLog(data: any) {
-    // Fire and forget — não bloqueia o endpoint
+    // Fire and forget â€” nÃ£o bloqueia o endpoint
     LogsRepository.insertLog(data);
   }
 

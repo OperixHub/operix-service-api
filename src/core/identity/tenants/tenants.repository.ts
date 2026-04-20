@@ -31,6 +31,13 @@ class TenantsRepository {
     connect.release();
     return result.rows[0] || null;
   }
+
+  static async findByName(name: string) {
+    const connect = await connection.connect();
+    const result = await connect.query(`SELECT * FROM ${this.tableName} WHERE LOWER(name) = LOWER($1)`, [name]);
+    connect.release();
+    return result.rows[0] || null;
+  }
 }
 
 export default TenantsRepository;

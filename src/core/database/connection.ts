@@ -1,10 +1,11 @@
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { Pool } from 'pg';
+import { env } from '../config/env.js';
 
 dotenv.config();
 
 const connection = new Pool({
-  connectionString: `${process.env.DATABASE_URL}`,
+  connectionString: env.databaseUrl,
 });
 
 export default connection;

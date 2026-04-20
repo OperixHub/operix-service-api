@@ -15,10 +15,11 @@ const openApiDocument = generateOpenApiDocument();
 
 router.use(json());
 
+router.get('/health', (_req, res) => res.status(200).json({ status: 'ok', service: 'operix-service-api' }));
 router.use('/docs', serve);
 router.get('/docs', setup(openApiDocument));
 
-// Rotas públicas de Autenticação/Proxy para o Keycloak
+// Rotas pÃºblicas de AutenticaÃ§Ã£o/Proxy para o Keycloak
 router.use('/api/auth', authRouter);
 
 // Middleware Global de Auth do Keycloak

@@ -7,7 +7,7 @@ MessagingService.init(io);
 io.use(async (socket, next) => {
   const token = socket.handshake.auth.token || socket.handshake.headers['authorization'];
   if (!token) {
-    return next(new Error('Autenticação WebSockets Necessária'));
+    return next(new Error('AutenticaÃ§Ã£o WebSockets NecessÃ¡ria'));
   }
 
   const cleanToken = typeof token === 'string' && token.startsWith('Bearer ') ? token.split(' ')[1] : token;
@@ -17,7 +17,7 @@ io.use(async (socket, next) => {
     (socket as any).user = user;
     next();
   } catch (error) {
-    return next(new Error('Token de Mensageria Inválido'));
+    return next(new Error('Token de Mensageria InvÃ¡lido'));
   }
 });
 

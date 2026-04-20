@@ -8,13 +8,13 @@ export default class ServicesController {
   static async getAll(req: Request, res: Response) {
     const { tenant_id } = (req as any).user;
     const services = await ServicesService.getAll(tenant_id);
-    return ResponseHandler.success(res, services, 'Serviços listados com sucesso');
+    return ResponseHandler.success(res, services, 'ServiÃ§os listados com sucesso');
   }
 
   static async getAllWharehouse(req: Request, res: Response) {
     const { tenant_id } = (req as any).user;
     const services = await ServicesService.getAllWharehouse(tenant_id);
-    return ResponseHandler.success(res, services, 'Serviços do almoxerifado listados com sucesso');
+    return ResponseHandler.success(res, services, 'ServiÃ§os do almoxerifado listados com sucesso');
   }
 
   static async create(req: Request, res: Response) {
@@ -22,7 +22,7 @@ export default class ServicesController {
     const serviceData = ServiceModel.fromRequest({ ...req.body, tenant_id });
     const created = await ServicesService.create(serviceData);
     MessagingService.notifyTenant(tenant_id, '@service/created', created);
-    return ResponseHandler.success(res, created, 'Serviço criado com sucesso', 201);
+    return ResponseHandler.success(res, created, 'ServiÃ§o criado com sucesso', 201);
   }
 
   static async updateWarehouse(req: Request, res: Response) {
@@ -37,7 +37,7 @@ export default class ServicesController {
     const { tenant_id } = (req as any).user;
     const { id } = req.params;
     const result = await ServicesService.updateInfoClient(id, tenant_id, req.body);
-    return ResponseHandler.success(res, result, 'Informações do cliente atualizadas com sucesso');
+    return ResponseHandler.success(res, result, 'InformaÃ§Ãµes do cliente atualizadas com sucesso');
   }
 
   static async updateStatusService(req: Request, res: Response) {
@@ -46,7 +46,7 @@ export default class ServicesController {
     const { typeTable } = req.body;
     const result = await ServicesService.updateStatusService(id, tenant_id, status, typeTable);
     MessagingService.notifyTenant(tenant_id, '@service/status_updated', { id, status, result });
-    return ResponseHandler.success(res, result, 'Status do serviço atualizado com sucesso');
+    return ResponseHandler.success(res, result, 'Status do serviÃ§o atualizado com sucesso');
   }
 
   static async updateStatusPayment(req: Request, res: Response) {
@@ -62,6 +62,6 @@ export default class ServicesController {
     const { tenant_id } = (req as any).user;
     const { id, cod, typeTable } = req.params;
     const result = await ServicesService.remove(id, tenant_id, cod, typeTable);
-    return ResponseHandler.success(res, result, 'Serviço removido com sucesso', 204);
+    return ResponseHandler.success(res, result, 'ServiÃ§o removido com sucesso', 204);
   }
 }

@@ -19,10 +19,10 @@ import TypesProductModel from './types-product/types-product.model.js';
 
 const router = Router();
 
-// Toda rota deste módulo exige a role module:operational
+// Toda rota deste mÃ³dulo exige a role module:operational
 router.use(RolesMiddleware.requireRole('module:operational'));
 
-// ——— Services ———
+// â€”â€”â€” Services â€”â€”â€”
 router.get('/services', ServicesController.getAll);
 router.get('/services/warehouse', ServicesController.getAllWharehouse);
 router.post('/services', ValidateMiddleware.validateSchema(ServiceModel.createSchema), ServicesController.create);
@@ -32,23 +32,23 @@ router.put('/services/status/:id/:status', ServicesController.updateStatusServic
 router.put('/services/status/payment/:id/:status', ServicesController.updateStatusPayment);
 router.delete('/services/:id/:cod/:typeTable', ServicesController.remove);
 
-// ——— Order of Service ———
+// â€”â€”â€” Order of Service â€”â€”â€”
 router.get('/order-of-service', OrderOfServiceController.getAll);
 router.get('/order-of-service/:cod', OrderOfServiceController.getUnique);
 router.put('/order-of-service/estimate/:cod', ValidateMiddleware.validateSchema(OrderOfServiceModel.updateEstimateSchema), OrderOfServiceController.updateEstimate);
 router.delete('/order-of-service/estimate/:cod/:idEstimate', OrderOfServiceController.removeEstimate);
 
-// ——— Status Service ———
+// â€”â€”â€” Status Service â€”â€”â€”
 router.get('/status-service', StatusServiceController.getAll);
 router.post('/status-service', ValidateMiddleware.validateSchema(StatusServiceModel.createSchema), StatusServiceController.create);
 router.delete('/status-service/:id', StatusServiceController.remove);
 
-// ——— Status Payment ———
+// â€”â€”â€” Status Payment â€”â€”â€”
 router.get('/status-payment', StatusPaymentController.getAll);
 router.post('/status-payment', ValidateMiddleware.validateSchema(StatusPaymentModel.createSchema), StatusPaymentController.create);
 router.delete('/status-payment/:id', StatusPaymentController.remove);
 
-// ——— Types Product ———
+// â€”â€”â€” Types Product â€”â€”â€”
 router.get('/types-product', TypesProductController.getAll);
 router.post('/types-product', ValidateMiddleware.validateSchema(TypesProductModel.createSchema), TypesProductController.create);
 router.delete('/types-product/:id', TypesProductController.remove);

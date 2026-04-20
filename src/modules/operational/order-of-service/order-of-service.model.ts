@@ -23,7 +23,7 @@ export default class OrderOfServiceModel {
 
   static createSchema = z.object({ estimate: z.string().nullable().optional(), value: z.number() }).openapi('OrderOfServiceCreate');
 
-  static updateEstimateSchema = z.object({ type: z.string().min(1), description: z.string().min(1), price: z.union([z.string(), z.number()]).refine(val => val !== ''), amount: z.union([z.string(), z.number()]).optional() }).superRefine((data, ctx) => { if (data.type !== 'simples') { if (data.amount === undefined || data.amount === '') { ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Campo "Quantidade" é obrigatório.', path: ['amount'] }); } } }).openapi('OrderUpdateEstimate');
+  static updateEstimateSchema = z.object({ type: z.string().min(1), description: z.string().min(1), price: z.union([z.string(), z.number()]).refine(val => val !== ''), amount: z.union([z.string(), z.number()]).optional() }).superRefine((data, ctx) => { if (data.type !== 'simples') { if (data.amount === undefined || data.amount === '') { ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Campo "Quantidade" Ã© obrigatÃ³rio.', path: ['amount'] }); } } }).openapi('OrderUpdateEstimate');
 
   static responseSchema = z.object({ success: z.boolean(), msg: z.string(), data: OrderOfServiceModel.schema }).openapi('OrderOfServiceResponse');
   static listResponseSchema = z.object({ success: z.boolean(), msg: z.string(), data: z.array(OrderOfServiceModel.schema) }).openapi('OrderOfServiceListResponse');

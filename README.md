@@ -1,109 +1,195 @@
-# Operix Service API 🚀
+# Operix Service API
 
-**Operix Service API** é o motor por trás do sistema Operix, uma plataforma de gestão inteligente para serviços técnicos e manutenções. Esta API robusta foi construída com foco em escalabilidade, isolamento de dados (**Multi-tenancy**) e padrões de projeto modernos.
+API RESTful para gestão operacional, estoque, identidade e notificações do ecossistema Operix.
 
----
+## Visão Geral
 
-## 🛠️ Tecnologias e Ferramentas
+- Runtime principal: `Bun`
+- Framework HTTP: `Express`
+- Banco de dados: `PostgreSQL`
+- Identidade e autorização: `Keycloak`
+- Documentação: `Swagger/OpenAPI`
+- Comunicação em tempo real: `Socket.IO`
 
-- **Runtime**: [Bun](https://bun.sh/) (Extremamente rápido e moderno)
-- **Framework**: [Express.js](https://expressjs.com/)
-- **Linguagem**: [TypeScript](https://www.typescriptlang.org/)
-- **Banco de Dados**: [PostgreSQL](https://www.postgresql.org/) (via `pg`)
-- **Validação**: [Zod](https://zod.dev/) (Integração total com schemas)
-- **Documentação**: [Swagger / OpenAPI 3.0](https://swagger.io/)
-- **Segurança**: [JWT](https://jwt.io/) (JSON Web Tokens) e [Bcrypt](https://github.com/kelektiv/node.bcrypt.js)
-- **Real-time**: [Socket.io](https://socket.io/) (Para atualizações instantâneas de ordens de serviço)
+O projeto segue uma organização modular com `controllers`, `services`, `repositories`, `models` e `middlewares`, buscando baixa acoplagem e responsabilidades mais claras entre HTTP, regra de negócio, persistência e integração com IAM.
 
----
+## Principais Ajustes Aplicados
 
-## 🏗️ Arquitetura do Projeto
+- Centralização de variáveis de ambiente em `src/core/config/env.ts`
+- Endpoints de identidade organizados em `/api/identity/*`
+- Correção do fluxo de autenticação e provisionamento multi-tenant
+- Compensação básica em cadastro para evitar órfãos no Keycloak
+- Respostas HTTP mais alinhadas ao REST, incluindo `204 No Content`
+- Endurecimento de segurança com headers HTTP e validação mais explícita
+- Sanitização de dados sensíveis em respostas de usuário
+- Pipeline CI com GitHub Actions
 
-O projeto segue uma arquitetura baseada em classes com separação clara de responsabilidades:
+## Pré-requisitos
 
-- **Models**: Definem a estrutura dos dados e os Schemas de validação (Zod).
-- **Repositories**: Contêm toda a lógica de persistência e consultas SQL puras (foco em performance).
-- **Services**: Implementam as regras de negócio e orquestram a comunicação entre repositories.
-- **Controllers**: Gerenciam as requisições HTTP e as respostas padronizadas.
-- **Middlewares**: Processam lógica transversal como autenticação e validação de input.
+- [Bun](https://bun.sh/)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
----
+## Variáveis de Ambiente
 
-## ✨ Principais Características
+1. Copie o arquivo de exemplo:
 
-### 1. Multi-Tenancy Nativo
-Todos os dados são isolados por unidade corporativa através do campo `tenant_id`. Um usuário de uma unidade jamais terá acesso aos dados de outra, garantindo segurança e privacidade em escala.
-
-### 2. Validação e Tipagem Forte
-Utilizamos **Zod** para garantir que cada entrada de dado na API esteja correta. Os schemas são compartilhados com o gerador de documentação, mantendo o código e o Swagger sempre sincronizados.
-
-### 3. Respostas Padronizadas
-Todas as respostas seguem um contrato único através do `ResponseHandler`:
-```json
-{
-  "success": true,
-  "msg": "Mensagem de sucesso ou erro",
-  "data": { ... }
-}
-```
-
-### 4. Documentação Automática
-A API possui uma interface Swagger completa disponível na rota raiz `/`. Basta navegar até lá para testar todos os endpoints.
-
----
-
-## 🚀 Como Executar
-
-### Pré-requisitos
-- [Node.js](https://nodejs.org/) ou [Bun](https://bun.sh/) instalado.
-- [Docker](https://www.docker.com/) instalado.
-
-### Configuração
-1. Clone o repositório.
-2. Crie um arquivo `.env` na raiz com as variáveis do arquivo `.env.example`:
-
-3. Configure o banco de dados e as dependências:
 ```bash
-npm install -g bun  ##### Se o que estiver instalado for o node.js
+cp .env.example .env
 ```
+
+2. Revise os valores de banco, Keycloak e CORS no arquivo `.env`.
+
+## Como Rodar Localmente
+
+1. Instale as dependências:
+
 ```bash
 bun install
 ```
 
-4. Suba o ambiente (Docker):
+2. Suba os serviços de apoio:
+
 ```bash
-bun run database
+docker compose up -d postgres keycloak pgadmin
 ```
 
-5. Execute as Migrações e Seeds (Sequelize):
-```bash
+3. Rode as migrações:
 
-bun run migrate && bun run seed
+```bash
+bun run migrate
 ```
 
-6. Execute em modo de desenvolvimento:
+4. Opcionalmente carregue seeds:
+
+```bash
+bun run seed
+```
+
+5. Inicie a API em desenvolvimento:
+
 ```bash
 bun run dev
 ```
 
----
+6. Acesse:
 
-## 🛠️ Comandos Básicos
+- API: [http://localhost:3333](http://localhost:3333)
+- Healthcheck: [http://localhost:3333/health](http://localhost:3333/health)
+- Swagger: [http://localhost:3333/docs](http://localhost:3333/docs)
+- Keycloak: [http://localhost:8080](http://localhost:8080)
+- PgAdmin: [http://localhost:5050](http://localhost:5050)
 
-| Comando | Descrição |
-|---------|-----------|
-| `bun run database` | Sobe o banco de dados via Docker Compose |
-| `bun run migrate` | Executa as migrações do banco de dados (Sequelize) |
-| `bun run seed` | Deleta e popula o banco de dados com dados iniciais |
-| `bun run dev` | Inicia o servidor em modo de desenvolvimento |
-| `bun run start` | Inicia o servidor em modo produção |
+## Como Rodar com Docker
 
----
+O `compose.yaml` já possui a API, PostgreSQL, Keycloak e PgAdmin.
 
-## 🤝 Contato
+1. Garanta que `.env` exista na raiz.
+2. Suba todo o ambiente:
 
-Desenvolvido por **João Pedro P. Lima**  
-📧 [joaopedrodevx.contato@gmail.com](mailto:joaopedrodevx.contato@gmail.com)  
+```bash
+docker compose up -d --build
+```
 
----
-*Este projeto é parte da suíte Operix para gestão eficiente de serviços.*
+3. Execute as migrações com a aplicação disponível:
+
+```bash
+docker compose exec api bun run migrate
+```
+
+4. Para derrubar o ambiente:
+
+```bash
+docker compose down -v
+```
+
+## Scripts Úteis
+
+- `bun run dev`: sobe a API em modo desenvolvimento
+- `bun run start`: sobe a API em modo normal
+- `bun run build`: gera build em `dist/`
+- `bun run lint`: valida padrões de código
+- `bun run typecheck`: valida tipos TypeScript
+- `bun run test`: executa toda a suíte
+- `bun run test:unit`: executa testes unitários
+- `bun run test:integration`: executa testes de integração
+- `bun run check`: executa lint, typecheck e testes
+
+## Segurança e LGPD
+
+- Autenticação JWT com validação por `issuer` e `JWKS`
+- Autorização por roles
+- Isolamento por `tenant_id`
+- Remoção de `password` das respostas públicas
+- Logs sem persistência direta de payload sensível
+- Headers de segurança HTTP básicos
+
+Para avançar na aderência à LGPD em produção, recomenda-se complementar com:
+
+- política de retenção de logs
+- mascaramento de PII em exports administrativos
+- trilha de auditoria para consentimento e exclusão
+- processo operacional para atendimento de titulares
+
+## Testes
+
+Os testes ficam em `tests/unit` e `tests/integration`.
+
+Cobertura atual priorizada:
+
+- fluxo de cadastro com Keycloak e persistência local
+- compensação em falha de cadastro
+- padronização das respostas HTTP
+- rotas principais de identidade
+
+## CI/CD
+
+A pipeline em `.github/workflows/ci.yml` executa:
+
+1. instalação das dependências com Bun
+2. lint
+3. typecheck
+4. testes
+5. build da aplicação
+
+## Guia Básico de Deploy em VPS
+
+1. Instale Docker e Docker Compose na VPS.
+2. Clone o repositório no servidor.
+3. Crie e ajuste o `.env` com URLs e credenciais reais.
+4. Suba os containers:
+
+```bash
+docker compose up -d --build
+```
+
+5. Rode as migrações:
+
+```bash
+docker compose exec api bun run migrate
+```
+
+6. Coloque a API atrás de um reverse proxy como Nginx ou Traefik.
+7. Publique HTTPS com Let's Encrypt.
+8. Restrinja portas administrativas como PgAdmin e Keycloak.
+
+## Estrutura Resumida
+
+```text
+src/
+  core/
+    auth/
+    config/
+    docs/
+    identity/
+    logs/
+    middlewares/
+    utils/
+  modules/
+    inventory/
+    notifications/
+    operational/
+tests/
+  integration/
+  unit/
+```

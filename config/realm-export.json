@@ -15,9 +15,26 @@
   ],
   "roles": {
     "realm": [
-      { "name": "module:operational",    "description": "Acesso ao módulo de gestão operacional (serviços, OS, status, tipos de produto)", "composite": false },
-      { "name": "module:inventory",      "description": "Acesso ao módulo de estoque", "composite": false },
-      { "name": "module:notifications",  "description": "Acesso ao módulo de notificações e alertas", "composite": false },
+      {
+        "name": "module:operational",
+        "description": "Acesso ao módulo de gestão operacional (serviços, OS, status, tipos de produto)",
+        "composite": false
+      },
+      {
+        "name": "module:inventory",
+        "description": "Acesso ao módulo de estoque",
+        "composite": false
+      },
+      {
+        "name": "module:organization",
+        "description": "Acesso ao módulo de identidade e organização",
+        "composite": false
+      },
+      {
+        "name": "module:notifications",
+        "description": "Acesso ao módulo de notificações e alertas",
+        "composite": false
+      },
       {
         "name": "role:beginner",
         "description": "Plano inicial",
@@ -134,7 +151,6 @@
           }
         }
       ]
-
     }
   ],
   "keycloakVersion": "26.0.7"
