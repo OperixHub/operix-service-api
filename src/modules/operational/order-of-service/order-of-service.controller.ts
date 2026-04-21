@@ -24,7 +24,7 @@ export default class OrderOfServiceController {
     if (req.body.type === 'completa') {
       const getOrderValue = await OrderOfServiceService.getUnique(cod, tenant_id);
       const id = Utils.generateUuid();
-      let estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
+      const estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
       estimateArray.push({ id, amount: req.body.amount, description: req.body.description, price: req.body.price });
       let totalPrice = 0;
       for (const record of estimateArray) totalPrice += record.price;
@@ -35,7 +35,7 @@ export default class OrderOfServiceController {
       if (removed) {
         const getOrderValue = await OrderOfServiceService.getUnique(cod, tenant_id);
         const id = Utils.generateUuid();
-        let estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
+        const estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
         estimateArray.push({ id, amount: req.body.amount, description: req.body.description, price: req.body.price });
         let totalPrice = 0;
         for (const record of estimateArray) totalPrice += record.price;
