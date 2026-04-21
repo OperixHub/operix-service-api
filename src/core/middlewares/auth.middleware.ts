@@ -1,13 +1,15 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import ResponseHandler from '../utils/response-handler.js';
 import connection from '../database/connection.js';
 import UsersRepository from '../identity/users/users.repository.js';
 import UserModel from '../identity/users/users.model.js';
+import TenantRepository from '../identity/tenants/tenants.repository.js';
+import { env } from '../config/env.js';
 
 const client = jwksClient({
-  jwksUri: process.env.KEYCLOAK_JWKS_URI || `http://localhost:8080/realms/${process.env.KEYCLOAK_REALM || 'operix-service'}/protocol/openid-connect/certs`,
+  jwksUri: env.keycloakJwksUri,
   cache: true,
   cacheMaxEntries: 5,
   cacheMaxAge: 600_000,
@@ -15,125 +17,131 @@ const client = jwksClient({
 
 function getKey(header: any, callback: jwt.SigningKeyCallback) {
   if (!header.kid) {
-    return callback(new Error('Token JWT não contém "kid" no header'));
+    return callback(new Error('Token JWT nÃ£o contÃ©m "kid" no header'));
   }
 
   client.getSigningKey(header.kid, (err, key) => {
     if (err) {
-      console.error(`Erro ao obter chave JWKS para kid=${header.kid}:`, err);
       return callback(err);
     }
+
     if (!key) {
       return callback(new Error(`Nenhuma chave encontrada para kid=${header.kid}`));
     }
+
     try {
-      const signingKey = key.getPublicKey();
-      callback(null, signingKey);
-    } catch (e) {
-      callback(e as Error);
+      callback(null, key.getPublicKey());
+    } catch (error) {
+      callback(error as Error);
     }
   });
 }
 
 const jwtVerifyOptions = {
   algorithms: ['RS256'] as jwt.Algorithm[],
-  issuer: process.env.KEYCLOAK_ISSUER || `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM || 'operix-service'}`,
+  issuer: env.keycloakIssuer,
 };
+
+async function resolveTenantId(decoded: any, user?: { tenant_id?: number | null }) {
+  if (user?.tenant_id) {
+    return user.tenant_id;
+  }
+
+  if (decoded?.tenant_id) {
+    const tenantId = Number(decoded.tenant_id);
+    if (!Number.isNaN(tenantId)) {
+      return tenantId;
+    }
+  }
+
+  const groups = Array.isArray(decoded?.groups) ? decoded.groups : [];
+  for (const groupName of groups) {
+    const tenant = await TenantRepository.findByName(String(groupName));
+    if (tenant?.id) {
+      return tenant.id;
+    }
+  }
+
+  return null;
+}
 
 async function provisionUser(decoded: any): Promise<any> {
   const keycloakId = decoded.sub;
   const email = decoded.email || decoded.preferred_username || decoded.sub;
-  const username = decoded.username || decoded.preferred_username || decoded.email || decoded.sub;
+  const username = decoded.preferred_username || decoded.username || decoded.email || decoded.sub;
 
-  try {
-    const byKcId = await UsersRepository.findByKeycloakId(keycloakId);
-    if (byKcId) return byKcId;
-
-    const byEmail = await UsersRepository.findByEmail(email);
-    if (byEmail) {
-      // Link as contas se o email bater
-      const connect = await connection.connect();
-      try {
-        await connect.query('UPDATE users SET keycloak_id = $1 WHERE id = $2', [keycloakId, byEmail.id]);
-      } finally {
-        connect.release();
-      }
-      return { ...byEmail, keycloak_id: keycloakId };
-    }
-
-    // Provisionamento Automático (Caso não exista e seja login SSO válido)
-    const tenantId = decoded.tenant_id ? Number(decoded.tenant_id) : 1;
-    const name = decoded.name || username;
-
-    const newUser = new UserModel({
-      tenant_id: tenantId,
-      name,
-      username,
-      email,
-      keycloak_id: keycloakId,
-      root: false,
-      admin: false
-    });
-
-    return await UsersRepository.create(newUser);
-  } catch (error) {
-    console.error('Erro ao provisionar usuário:', error);
-    return null;
+  const byKcId = await UsersRepository.findByKeycloakId(keycloakId);
+  if (byKcId) {
+    return byKcId;
   }
+
+  const byEmail = await UsersRepository.findByEmail(email);
+  if (byEmail) {
+    const connect = await connection.connect();
+    try {
+      await connect.query('UPDATE users SET keycloak_id = $1 WHERE id = $2', [keycloakId, byEmail.id]);
+      return { ...byEmail, keycloak_id: keycloakId };
+    } finally {
+      connect.release();
+    }
+  }
+
+  const tenantId = await resolveTenantId(decoded);
+  if (!tenantId) {
+    throw new Error('Token vÃ¡lido, mas sem vÃ­nculo de tenant configurado.');
+  }
+
+  const name = decoded.name || username;
+  return UsersRepository.create(new UserModel({
+    tenant_id: tenantId,
+    name,
+    username,
+    email,
+    keycloak_id: keycloakId,
+    root: false,
+    admin: false,
+    password: null,
+  }));
 }
 
 export default class AuthMiddleware {
   static async verifyRawToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jwt.verify(token, getKey, jwtVerifyOptions, async (err: any, decoded: any) => {
-
         if (err) {
-          return reject(new Error(`Token inválido: ${err.message}`));
+          return reject(new Error(`Token invÃ¡lido: ${err.message}`));
         }
 
         try {
           const user = await provisionUser(decoded);
           const roles: string[] = decoded.realm_access?.roles || [];
 
-          if (!user) {
-            // Fallback se o provisionamento falhou
-            return resolve({
-              id: null,
-              keycloak_id: decoded.sub,
-              username: decoded.preferred_username || decoded.sub,
-              email: decoded.email,
-              roles,
-              tenant_id: decoded.tenant_id ? Number(decoded.tenant_id) : 1,
-            });
-          }
-
           resolve({
             ...user,
             sub: decoded.sub,
             roles,
-            tenant_id: decoded.tenant_id ? Number(decoded.tenant_id) : user.tenant_id,
+            tenant_id: await resolveTenantId(decoded, user),
           });
-        } catch (dbError) {
-          reject(new Error(`Erro ao provisionar usuário no banco:: ${dbError}`));
+        } catch (error: any) {
+          reject(new Error(error.message || 'Erro ao provisionar usuÃ¡rio no banco.'));
         }
-      })
+      });
     });
   }
 
   static async authToken(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
 
     if (!token) {
-      return ResponseHandler.error(res, 'Token de acesso não fornecido', 401);
+      return ResponseHandler.error(res, 'Token de acesso nÃ£o fornecido', 401);
     }
 
     try {
-      const user = await AuthMiddleware.verifyRawToken(token);
-      (req as any).user = user;
+      (req as any).user = await AuthMiddleware.verifyRawToken(token);
       next();
     } catch (error: any) {
-      return ResponseHandler.error(res, error.message || 'Falha na autenticação', 401);
+      return ResponseHandler.error(res, error.message || 'Falha na autenticaÃ§Ã£o', 401);
     }
   }
 }

@@ -1,5 +1,5 @@
-// API pública do módulo operational
-// APENAS estes exports podem ser importados por outros módulos
+// API pÃºblica do mÃ³dulo operational
+// APENAS estes exports podem ser importados por outros mÃ³dulos
 
 export { ServicesQueryService } from './services/services.service.js';
 

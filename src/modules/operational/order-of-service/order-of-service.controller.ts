@@ -7,14 +7,14 @@ export default class OrderOfServiceController {
   static async getAll(req: Request, res: Response) {
     const { tenant_id } = (req as any).user;
     const orders = await OrderOfServiceService.getAll(tenant_id);
-    return ResponseHandler.success(res, orders, 'Ordens de serviço listadas com sucesso');
+    return ResponseHandler.success(res, orders, 'Ordens de serviÃ§o listadas com sucesso');
   }
 
   static async getUnique(req: Request, res: Response) {
     const { tenant_id } = (req as any).user;
     const { cod } = req.params;
     const order = await OrderOfServiceService.getUnique(cod, tenant_id);
-    return ResponseHandler.success(res, order, 'Ordem de serviço detalhada com sucesso');
+    return ResponseHandler.success(res, order, 'Ordem de serviÃ§o detalhada com sucesso');
   }
 
   static async updateEstimate(req: Request, res: Response) {
@@ -24,25 +24,25 @@ export default class OrderOfServiceController {
     if (req.body.type === 'completa') {
       const getOrderValue = await OrderOfServiceService.getUnique(cod, tenant_id);
       const id = Utils.generateUuid();
-      let estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
+      const estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
       estimateArray.push({ id, amount: req.body.amount, description: req.body.description, price: req.body.price });
       let totalPrice = 0;
       for (const record of estimateArray) totalPrice += record.price;
       const updated = await OrderOfServiceService.updateEstimate(JSON.stringify(estimateArray), totalPrice, cod, tenant_id);
-      return ResponseHandler.success(res, updated, 'Orçamento atualizado com sucesso');
+      return ResponseHandler.success(res, updated, 'OrÃ§amento atualizado com sucesso');
     } else {
       const removed = await OrderOfServiceService.removeEstimateSimple(cod, tenant_id);
       if (removed) {
         const getOrderValue = await OrderOfServiceService.getUnique(cod, tenant_id);
         const id = Utils.generateUuid();
-        let estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
+        const estimateArray = JSON.parse(getOrderValue[0].estimate) || [];
         estimateArray.push({ id, amount: req.body.amount, description: req.body.description, price: req.body.price });
         let totalPrice = 0;
         for (const record of estimateArray) totalPrice += record.price;
         const updated = await OrderOfServiceService.updateEstimate(JSON.stringify(estimateArray), totalPrice, cod, tenant_id);
-        return ResponseHandler.success(res, updated, 'Orçamento simplificado atualizado com sucesso');
+        return ResponseHandler.success(res, updated, 'OrÃ§amento simplificado atualizado com sucesso');
       }
-      return ResponseHandler.error(res, 'Erro ao atualizar orçamento simplificado', 422);
+      return ResponseHandler.error(res, 'Erro ao atualizar orÃ§amento simplificado', 422);
     }
   }
 
@@ -50,6 +50,6 @@ export default class OrderOfServiceController {
     const { tenant_id } = (req as any).user;
     const { cod, idEstimate } = req.params;
     const result = await OrderOfServiceService.removeEstimate(cod, tenant_id, idEstimate);
-    return ResponseHandler.success(res, result, 'Orçamento removido com sucesso', 204);
+    return ResponseHandler.success(res, result, 'OrÃ§amento removido com sucesso', 204);
   }
 }

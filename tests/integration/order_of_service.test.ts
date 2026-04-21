@@ -28,7 +28,7 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
   return { query, release };
 }
 
-describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)', () => {
+describe('Testes de IntegraÃ§Ã£o - Rotas de Ordem de ServiÃ§o (Order of Service)', () => {
   const token = jwt.sign({ id: 1, username: 'admin', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
   test('GET /order_of_service/ - sucesso', async () => {
@@ -42,7 +42,7 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Ordens de serviço listadas com sucesso");
+    expect(res.body.msg).toBe("Ordens de serviÃ§o listadas com sucesso");
   });
 
   test('GET /order_of_service/:cod - sucesso', async () => {
@@ -56,7 +56,7 @@ describe('Testes de Integração - Rotas de Ordem de Serviço (Order of Service)
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Ordem de serviço detalhada com sucesso");
+    expect(res.body.msg).toBe("Ordem de serviÃ§o detalhada com sucesso");
   });
 
   test('PUT /order_of_service/estimate/:cod - sucesso', async () => {

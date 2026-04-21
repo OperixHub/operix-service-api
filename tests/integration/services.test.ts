@@ -28,7 +28,7 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
   return { query, release };
 }
 
-describe('Testes de Integração - Rotas de Serviços (Services)', () => {
+describe('Testes de IntegraÃ§Ã£o - Rotas de ServiÃ§os (Services)', () => {
   const token = jwt.sign({ id: 1, username: 'admin', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
   test('GET /services - sucesso', async () => {
@@ -43,7 +43,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Serviços listados com sucesso");
+    expect(res.body.msg).toBe("ServiÃ§os listados com sucesso");
   });
 
   test('GET /services/warehouse - sucesso', async () => {
@@ -57,8 +57,8 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    // Aceita variações de mensagem para evitar falha por detalhe de texto
-    expect(["Itens de almoxarifado listados com sucesso", "Serviços do almoxerifado listados com sucesso"]).toContain(res.body.msg);
+    // Aceita variaÃ§Ãµes de mensagem para evitar falha por detalhe de texto
+    expect(["Itens de almoxarifado listados com sucesso", "ServiÃ§os do almoxerifado listados com sucesso"]).toContain(res.body.msg);
   });
 
   test('POST /services - sucesso ao criar', async () => {
@@ -80,7 +80,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Serviço criado com sucesso");
+    expect(res.body.msg).toBe("ServiÃ§o criado com sucesso");
   });
 
   test('PUT /services/warehouse/:id/:value - sucesso', async () => {
@@ -113,7 +113,7 @@ describe('Testes de Integração - Rotas de Serviços (Services)', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Informações do cliente atualizadas com sucesso");
+    expect(res.body.msg).toBe("InformaÃ§Ãµes do cliente atualizadas com sucesso");
   });
 
   test('DELETE /services/:id/:cod/:typeTable - sucesso', async () => {

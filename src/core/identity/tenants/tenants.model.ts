@@ -43,7 +43,7 @@ export default class TenantModel {
 
   static createSchema = z.object(
     {
-      name: z.string().min(1, 'Campo "Nome" é obrigatório.')
+      name: z.string().min(1, 'Campo "Nome" Ã© obrigatÃ³rio.')
     }).openapi('TenantCreate');
 
   static responseSchema = z.object(

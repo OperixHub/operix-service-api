@@ -9,16 +9,20 @@
   },
   "scripts": {
     "database": "docker compose up -d --build",
+    "database:down": "docker compose down -v",
     "migrate": "bunx sequelize-cli db:migrate",
     "seed": "bunx sequelize-cli db:seed:all",
     "dev": "bun run --watch src/core/server.ts",
     "start": "bun run src/core/server.ts",
-    "test": "bun test",
+    "test": "bun test tests",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
     "clean": "rm -rf dist && echo 'Done.'",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit",
     "build": "bun build ./src/core/server.ts --outdir ./dist --target bun",
-    "start-from-build": "bun dist/server.js"
+    "start-from-build": "bun dist/server.js",
+    "check": "bun run typecheck && bun run test && bun run build"
   },
   "author": "João Pedro Pereira Lima",
   "license": "MIT",

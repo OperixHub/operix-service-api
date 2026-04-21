@@ -1,6 +1,6 @@
 // @ts-nocheck
 import connection from '../../../core/database/connection.js';
-// Dependência cross-module: usa apenas a API pública (index.ts) do módulo operational
+// DependÃªncia cross-module: usa apenas a API pÃºblica (index.ts) do mÃ³dulo operational
 import { ServicesQueryService } from '../../operational/index.js';
 
 class ToolsRepository {
