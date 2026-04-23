@@ -1,8 +1,3 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
-
 export default class ServiceModel {
   id: number | null;
   tenant_id: number | null;
@@ -36,13 +31,4 @@ export default class ServiceModel {
   static fromRequestParams(params: any = {}) { return new ServiceModel({ id: params.id }); }
 
   toJSON() { return { id: this.id, tenant_id: this.tenant_id, product: this.product, client: this.client, telephone: this.telephone, adress: this.adress, status: this.status, payment_status: this.payment_status, order_of_service: this.order_of_service, observation: this.observation, warehouse_status: this.warehouse_status, created_at: this.created_at, updated_at_service: this.updated_at_service, updated_at_payment: this.updated_at_payment, created_at_warehouse: this.created_at_warehouse }; }
-
-  static schema = z.object({ id: z.number().nullable().optional(), tenant_id: z.number().nullable().optional(), product: z.string().min(1), client: z.string().min(1), telephone: z.string().min(1), adress: z.string().optional(), status: z.union([z.string(), z.number()]).optional(), payment_status: z.number().optional(), order_of_service: z.number().nullable().optional(), observation: z.string().optional(), warehouse_status: z.boolean().optional(), created_at: z.string().nullable().optional(), updated_at_service: z.string().nullable().optional(), updated_at_payment: z.string().nullable().optional(), created_at_warehouse: z.string().nullable().optional() }).openapi('Service');
-
-  static createSchema = z.object({ product: z.string().min(1, 'Campo "Produto" é obrigatório.'), client: z.string().min(1, 'Campo "Cliente" é obrigatório.'), telephone: z.string().min(1, 'Campo "Telefone" é obrigatório.'), status: z.union([z.string(), z.number()]).refine(val => val !== '', { message: 'Campo "Status" é obrigatório.' }) }).openapi('ServiceCreate');
-
-  static updateInfoClientSchema = z.object({ product: z.string().min(1), client: z.string().min(1), telephone: z.string().min(1), adress: z.string().optional(), observation: z.string().optional() }).openapi('ServiceUpdateInfoClient');
-
-  static responseSchema = z.object({ success: z.boolean(), msg: z.string(), data: ServiceModel.schema }).openapi('ServiceResponse');
-  static listResponseSchema = z.object({ success: z.boolean(), msg: z.string(), data: z.array(ServiceModel.schema) }).openapi('ServiceListResponse');
 }

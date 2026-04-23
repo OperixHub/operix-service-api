@@ -28,7 +28,7 @@ router.use(AuthMiddleware.authToken);
 // Rotas Modulares
 router.use('/api', operationalRouter);
 router.use('/api', inventoryRouter);
-router.use('/api/identity', identityRouter);
+router.use('/api', identityRouter);
 router.use('/api', notificationsRouter);
 router.use('/api', logsRouter);
 

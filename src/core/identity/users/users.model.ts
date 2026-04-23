@@ -1,8 +1,3 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
-
 export default class UserModel {
   id: number | null;
   username: string;
@@ -73,38 +68,4 @@ export default class UserModel {
       root: this.root,
     };
   }
-
-  static publicSchema = z.object(
-    {
-      id: z.number().nullable().optional(),
-      username: z.string().min(1),
-      email: z.string().email(),
-      tenant: z.string().nullable().optional(),
-      tenant_id: z.number().nullable().optional(),
-      keycloak_id: z.string().nullable().optional(),
-      admin: z.boolean().nullable().optional(),
-      root: z.boolean().nullable().optional(),
-      name: z.string().min(1)
-    }).openapi('UserPublic');
-
-  static schema = z.object(
-    {
-      id: z.number().nullable().optional(),
-      username: z.string().min(1),
-      email: z.string().email(),
-      tenant: z.string().nullable().optional(),
-      tenant_id: z.number().nullable().optional(),
-      keycloak_id: z.string().nullable().optional(),
-      password: z.string().nullable().optional(),
-      admin: z.boolean().nullable().optional(),
-      root: z.boolean().nullable().optional(),
-      name: z.string().min(1)
-    }).openapi('User');
-
-  static listResponseSchema = z.object(
-    {
-      success: z.boolean(),
-      msg: z.string(),
-      data: z.array(UserModel.publicSchema)
-    }).openapi('UserListResponse');
 }

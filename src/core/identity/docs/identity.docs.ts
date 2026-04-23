@@ -1,29 +1,29 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import TenantModel from '../tenants/tenants.model.js';
-import UserModel from '../users/users.model.js';
+import { tenantCreateSchema, tenantListResponseSchema, tenantSchema } from '../tenants/tenants.schema.js';
+import { userListResponseSchema, userPublicSchema } from '../users/users.schema.js';
 
 export function registerIdentityDocs(registry: OpenAPIRegistry) {
-  registry.register('User', UserModel.publicSchema);
-  registry.register('Tenant', TenantModel.schema);
+  registry.register('User', userPublicSchema);
+  registry.register('Tenant', tenantSchema);
 
   const security = [{ bearerAuth: [] }];
 
   registry.registerPath({
     method: 'get',
-    path: '/identity/users',
+    path: '/users',
     tags: ['Identidade'],
     security,
     responses: {
       200: {
         description: 'Lista de usuários',
-        content: { 'application/json': { schema: UserModel.listResponseSchema } },
+        content: { 'application/json': { schema: userListResponseSchema } },
       },
     },
   });
 
   registry.registerPath({
     method: 'delete',
-    path: '/identity/users/{id}',
+    path: '/users/{id}',
     tags: ['Identidade'],
     security,
     responses: {
@@ -33,23 +33,23 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: 'get',
-    path: '/identity/tenants',
+    path: '/tenants',
     tags: ['Unidades'],
     security,
     responses: {
       200: {
         description: 'Lista de unidades',
-        content: { 'application/json': { schema: TenantModel.listResponseSchema } },
+        content: { 'application/json': { schema: tenantListResponseSchema } },
       },
     },
   });
 
   registry.registerPath({
     method: 'post',
-    path: '/identity/tenants',
+    path: '/tenants',
     tags: ['Unidades'],
     security,
-    request: { body: { content: { 'application/json': { schema: TenantModel.createSchema } }, required: true } },
+    request: { body: { content: { 'application/json': { schema: tenantCreateSchema } }, required: true } },
     responses: {
       201: { description: 'Unidade criada com sucesso' },
     },
@@ -57,7 +57,7 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
 
   registry.registerPath({
     method: 'delete',
-    path: '/identity/tenants/{id}',
+    path: '/tenants/{id}',
     tags: ['Unidades'],
     security,
     responses: {
