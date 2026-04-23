@@ -1,17 +1,12 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  //https://aka.ms/tsconfig
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist",
-    "module": "ESNext", // Ajustado para ESM nativo
+    "module": "NodeNext",
     "target": "ESNext",
     "lib": [
       "ESNext"
-    ],
-    "types": [
-      "bun",
-      "node",
-      "jest"
     ],
     "typeRoots": [
       "src/types",
@@ -20,7 +15,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true, // Permite importar arquivos .ts diretamente
+    "allowImportingTsExtensions": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -33,7 +28,7 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
     "allowJs": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "nodenext"
   },
   "include": [
     "src/**/*",
