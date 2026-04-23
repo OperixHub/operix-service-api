@@ -2,23 +2,18 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       KEYCLOAK_URL: http://keycloak:8080
       KEYCLOAK_JWKS_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
       KEYCLOAK_ISSUER: http://keycloak:8080/realms/${KEYCLOAK_REALM}
     ports:
       - "${PORT:-3333}:3333"
-    volumes:
-      - .:/app
-      - bun-modules:/app/node_modules
-      - bun-cache:/root/.bun/install/cache
-    command: sh -c "bun install && bun run dev"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +44,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.0.7
-    command: start-dev --import-realm
+    command: start --http-enabled=true --import-realm
     restart: unless-stopped
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER}
@@ -70,8 +65,6 @@ services:
       - operix-network
 
 volumes:
-  bun-modules:
-  bun-cache:
   postgres-data:
   keycloak-data:
 

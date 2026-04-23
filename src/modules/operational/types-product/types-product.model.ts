@@ -15,7 +15,7 @@ export default class TypesProductModel {
   toJSON() { return { id: this.id, tenant_id: this.tenant_id, name: this.name }; }
 
   static schema = z.object({ id: z.number().nullable().optional(), tenant_id: z.number().nullable().optional(), name: z.string().min(1) }).openapi('TypeProduct');
-  static createSchema = z.object({ name: z.string().min(1, 'Campo "Nome" Ã© obrigatÃ³rio.') }).openapi('TypeProductCreate');
+  static createSchema = z.object({ name: z.string().min(1, 'Campo "Nome" é obrigatório.') }).openapi('TypeProductCreate');
   static responseSchema = z.object({ success: z.boolean(), msg: z.string(), data: TypesProductModel.schema }).openapi('TypeProductResponse');
   static listResponseSchema = z.object({ success: z.boolean(), msg: z.string(), data: z.array(TypesProductModel.schema) }).openapi('TypeProductListResponse');
 }

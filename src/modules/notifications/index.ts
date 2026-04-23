@@ -1,2 +1,2 @@
-// API pÃºblica do mÃ³dulo notifications
+// API pública do módulo notifications
 export { default as notificationsRouter } from './notifications.routes.js';

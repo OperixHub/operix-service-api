@@ -17,7 +17,7 @@ const client = jwksClient({
 
 function getKey(header: any, callback: jwt.SigningKeyCallback) {
   if (!header.kid) {
-    return callback(new Error('Token JWT nÃ£o contÃ©m "kid" no header'));
+    return callback(new Error('Token JWT não contém "kid" no header'));
   }
 
   client.getSigningKey(header.kid, (err, key) => {
@@ -88,7 +88,7 @@ async function provisionUser(decoded: any): Promise<any> {
 
   const tenantId = await resolveTenantId(decoded);
   if (!tenantId) {
-    throw new Error('Token vÃ¡lido, mas sem vÃ­nculo de tenant configurado.');
+    throw new Error('Token válido, mas sem vínculo de tenant configurado.');
   }
 
   const name = decoded.name || username;
@@ -109,7 +109,7 @@ export default class AuthMiddleware {
     return new Promise((resolve, reject) => {
       jwt.verify(token, getKey, jwtVerifyOptions, async (err: any, decoded: any) => {
         if (err) {
-          return reject(new Error(`Token invÃ¡lido: ${err.message}`));
+          return reject(new Error(`Token inválido: ${err.message}`));
         }
 
         try {
@@ -123,7 +123,7 @@ export default class AuthMiddleware {
             tenant_id: await resolveTenantId(decoded, user),
           });
         } catch (error: any) {
-          reject(new Error(error.message || 'Erro ao provisionar usuÃ¡rio no banco.'));
+          reject(new Error(error.message || 'Erro ao provisionar usuário no banco.'));
         }
       });
     });
@@ -134,14 +134,14 @@ export default class AuthMiddleware {
     const token = authHeader?.split(' ')[1];
 
     if (!token) {
-      return ResponseHandler.error(res, 'Token de acesso nÃ£o fornecido', 401);
+      return ResponseHandler.error(res, 'Token de acesso não fornecido', 401);
     }
 
     try {
       (req as any).user = await AuthMiddleware.verifyRawToken(token);
       next();
     } catch (error: any) {
-      return ResponseHandler.error(res, error.message || 'Falha na autenticaÃ§Ã£o', 401);
+      return ResponseHandler.error(res, error.message || 'Falha na autenticação', 401);
     }
   }
 }

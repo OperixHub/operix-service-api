@@ -7,7 +7,7 @@ class OrderOfServiceService {
 
   static async getUnique(cod, tenant_id) {
     const order = await OrderOfServiceRepository.getUnique(cod, tenant_id);
-    if (!order || order.length === 0) throw new ValidationError('Ordem de serviÃ§o nÃ£o encontrada', 404);
+    if (!order || order.length === 0) throw new ValidationError('Ordem de serviço não encontrada', 404);
     return order;
   }
 

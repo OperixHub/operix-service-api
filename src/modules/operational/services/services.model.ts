@@ -39,7 +39,7 @@ export default class ServiceModel {
 
   static schema = z.object({ id: z.number().nullable().optional(), tenant_id: z.number().nullable().optional(), product: z.string().min(1), client: z.string().min(1), telephone: z.string().min(1), adress: z.string().optional(), status: z.union([z.string(), z.number()]).optional(), payment_status: z.number().optional(), order_of_service: z.number().nullable().optional(), observation: z.string().optional(), warehouse_status: z.boolean().optional(), created_at: z.string().nullable().optional(), updated_at_service: z.string().nullable().optional(), updated_at_payment: z.string().nullable().optional(), created_at_warehouse: z.string().nullable().optional() }).openapi('Service');
 
-  static createSchema = z.object({ product: z.string().min(1, 'Campo "Produto" Ã© obrigatÃ³rio.'), client: z.string().min(1, 'Campo "Cliente" Ã© obrigatÃ³rio.'), telephone: z.string().min(1, 'Campo "Telefone" Ã© obrigatÃ³rio.'), status: z.union([z.string(), z.number()]).refine(val => val !== '', { message: 'Campo "Status" Ã© obrigatÃ³rio.' }) }).openapi('ServiceCreate');
+  static createSchema = z.object({ product: z.string().min(1, 'Campo "Produto" é obrigatório.'), client: z.string().min(1, 'Campo "Cliente" é obrigatório.'), telephone: z.string().min(1, 'Campo "Telefone" é obrigatório.'), status: z.union([z.string(), z.number()]).refine(val => val !== '', { message: 'Campo "Status" é obrigatório.' }) }).openapi('ServiceCreate');
 
   static updateInfoClientSchema = z.object({ product: z.string().min(1), client: z.string().min(1), telephone: z.string().min(1), adress: z.string().optional(), observation: z.string().optional() }).openapi('ServiceUpdateInfoClient');
 

@@ -39,7 +39,7 @@ export default class AuthService {
   static async register(data: UserModel) {
     const tenantName = data.tenant?.trim();
     if (!tenantName) {
-      throw new ValidationError('Empresa nÃ£o informada.', 400);
+      throw new ValidationError('Empresa não informada.', 400);
     }
 
     const registrationContext = await this.prepareRegistrationContext(tenantName);
@@ -136,7 +136,7 @@ export default class AuthService {
       try {
         await KeycloakAdminService.deleteUser(context.userId, context.adminToken);
       } catch (error: any) {
-        rollbackErrors.push(error.message || 'Falha ao remover usuÃ¡rio do IAM.');
+        rollbackErrors.push(error.message || 'Falha ao remover usuário do IAM.');
       }
     }
 

@@ -22,5 +22,5 @@ class ServicesService {
 
 export default ServicesService;
 
-// API pÃºblica do mÃ³dulo â€” usado por notifications
+// API pública do módulo usada por notifications
 export { ServicesService as ServicesQueryService };

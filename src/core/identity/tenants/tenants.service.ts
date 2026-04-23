@@ -12,7 +12,7 @@ class TenantsService {
     const tenantName = tenant.name.trim();
     const existingTenant = await TenantsRepository.findByName(tenantName);
     if (existingTenant) {
-      throw new ValidationError('Unidade jÃ¡ cadastrada.', 409);
+      throw new ValidationError('Unidade já cadastrada.', 409);
     }
 
     const adminToken = await KeycloakAdminService.getAdminToken();
@@ -34,7 +34,7 @@ class TenantsService {
   static async remove(id: number) {
     const isRemoved = await TenantsRepository.remove(id);
     if (!isRemoved) {
-      throw new ValidationError('Unidade nÃ£o encontrada.', 404);
+      throw new ValidationError('Unidade não encontrada.', 404);
     }
     return true;
   }

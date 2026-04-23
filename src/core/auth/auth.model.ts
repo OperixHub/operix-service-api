@@ -5,21 +5,21 @@ extendZodWithOpenApi(z);
 
 export default class AuthModel {
   static loginSchema = z.object({
-    username: z.string().min(1, 'Campo "Nome de UsuÃ¡rio" Ã© obrigatÃ³rio.'),
-    password: z.string().min(1, 'Campo "Senha" Ã© obrigatÃ³rio.'),
+    username: z.string().min(1, 'Campo "Nome de Usuário" é obrigatório.'),
+    password: z.string().min(1, 'Campo "Senha" é obrigatório.'),
     remember: z.boolean().optional(),
   }).openapi('AuthLogin');
 
   static registerSchema = z.object({
-    name: z.string().min(1, 'Campo "Nome" Ã© obrigatÃ³rio.'),
-    username: z.string().min(1, 'Campo "Nome de UsuÃ¡rio" Ã© obrigatÃ³rio.'),
-    email: z.string().email('Campo "Email" invÃ¡lido.'),
-    password: z.string().min(8, 'Campo "Senha" deve ter no mÃ­nimo 8 caracteres.'),
-    tenant: z.string().min(1, 'Campo "Tenant" Ã© obrigatÃ³rio.'),
+    name: z.string().min(1, 'Campo "Nome" é obrigatório.'),
+    username: z.string().min(1, 'Campo "Nome de Usuário" é obrigatório.'),
+    email: z.string().email('Campo "Email" inválido.'),
+    password: z.string().min(8, 'Campo "Senha" deve ter no mínimo 8 caracteres.'),
+    tenant: z.string().min(1, 'Campo "Tenant" é obrigatório.'),
   }).openapi('AuthRegister');
 
   static refreshSchema = z.object({
-    refresh_token: z.string().min(1, 'Campo "Refresh token" Ã© obrigatÃ³rio.'),
+    refresh_token: z.string().min(1, 'Campo "Refresh token" é obrigatório.'),
   }).openapi('AuthRefresh');
 
   static loginResponseSchema = z.object({

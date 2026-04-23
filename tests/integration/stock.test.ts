@@ -28,12 +28,12 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
   return { query, release };
 }
 
-describe('Testes de IntegraÃ§Ã£o - Rotas de Estoque (Stock)', () => {
+describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
   const token = jwt.sign({ id: 1, username: 'admin', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
   test('GET /stocks - sucesso', async () => {
     mockConnectWithResponses((sql) => {
-      if (sql.includes('SELECT') && sql.includes('FROM stocks')) return { rows: [{ id: 1, name: 'PeÃ§a A', quantity: 10 }], rowCount: 1 };
+      if (sql.includes('SELECT') && sql.includes('FROM stocks')) return { rows: [{ id: 1, name: 'Peça A', quantity: 10 }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 
@@ -48,14 +48,14 @@ describe('Testes de IntegraÃ§Ã£o - Rotas de Estoque (Stock)', () => {
 
   test('POST /stocks - sucesso', async () => {
     mockConnectWithResponses((sql) => {
-      if (sql.includes('INSERT INTO stocks')) return { rows: [{ id: 2, name: 'PeÃ§a B', quantity: 5 }], rowCount: 1 };
+      if (sql.includes('INSERT INTO stocks')) return { rows: [{ id: 2, name: 'Peça B', quantity: 5 }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 
     const res = await supertest(app)
       .post('/api/stock')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'PeÃ§a B', code: 'PB001', quantity: 5, purchasePrice: 10, salePrice: 20 });
+      .send({ name: 'Peça B', code: 'PB001', quantity: 5, purchasePrice: 10, salePrice: 20 });
 
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
@@ -64,14 +64,14 @@ describe('Testes de IntegraÃ§Ã£o - Rotas de Estoque (Stock)', () => {
 
   test('PUT /stocks/:id - sucesso', async () => {
     mockConnectWithResponses((sql) => {
-      if (sql.includes('UPDATE stocks')) return { rows: [{ id: 1, name: 'PeÃ§a A', quantity: 15 }], rowCount: 1 };
+      if (sql.includes('UPDATE stocks')) return { rows: [{ id: 1, name: 'Peça A', quantity: 15 }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 
     const res = await supertest(app)
       .put('/api/stock/1')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'PeÃ§a A', code: 'PA001', quantity: 15, purchasePrice: 12, salePrice: 22 });
+      .send({ name: 'Peça A', code: 'PA001', quantity: 15, purchasePrice: 12, salePrice: 22 });
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -80,7 +80,7 @@ describe('Testes de IntegraÃ§Ã£o - Rotas de Estoque (Stock)', () => {
 
   test('DELETE /stocks/:id - sucesso', async () => {
     mockConnectWithResponses((sql) => {
-      if (sql.includes('DELETE FROM stocks')) return { rows: [{ id: 1, name: 'PeÃ§a A' }], rowCount: 1 };
+      if (sql.includes('DELETE FROM stocks')) return { rows: [{ id: 1, name: 'Peça A' }], rowCount: 1 };
       return { rows: [], rowCount: 0 };
     });
 

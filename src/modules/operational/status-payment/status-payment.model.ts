@@ -15,7 +15,7 @@ export default class StatusPaymentModel {
   toJSON() { return { id: this.id, tenant_id: this.tenant_id, description: this.description, cod: this.cod, color: this.color }; }
 
   static schema = z.object({ id: z.number().nullable().optional(), tenant_id: z.number().nullable(), description: z.string().min(1), cod: z.number().nullable(), color: z.string() }).openapi('StatusPayment');
-  static createSchema = z.object({ cod: z.number().nullable(), description: z.string().min(1, 'Campo "DescriÃ§Ã£o" Ã© obrigatÃ³rio.'), color: z.string() }).openapi('StatusPaymentCreate');
+  static createSchema = z.object({ cod: z.number().nullable(), description: z.string().min(1, 'Campo "Descrição" é obrigatório.'), color: z.string() }).openapi('StatusPaymentCreate');
   static responseSchema = z.object({ success: z.boolean(), msg: z.string(), data: StatusPaymentModel.schema }).openapi('StatusPaymentResponse');
   static listResponseSchema = z.object({ success: z.boolean(), msg: z.string(), data: z.array(StatusPaymentModel.schema) }).openapi('StatusPaymentListResponse');
 }

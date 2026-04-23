@@ -10,7 +10,7 @@ export default class RolesMiddleware {
       if (!hasAll) {
         return ResponseHandler.error(
           res,
-          `Acesso negado. Role(s) necessÃ¡ria(s): ${requiredRoles.join(', ')}`,
+          `Acesso negado. Role(s) necessária(s): ${requiredRoles.join(', ')}`,
           403,
         );
       }
@@ -27,7 +27,7 @@ export default class RolesMiddleware {
       if (!hasAny) {
         return ResponseHandler.error(
           res,
-          `Acesso negado. Ã‰ necessÃ¡ria pelo menos uma das roles: ${requiredRoles.join(', ')}`,
+          `Acesso negado. É necessária pelo menos uma das roles: ${requiredRoles.join(', ')}`,
           403,
         );
       }

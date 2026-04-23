@@ -18,10 +18,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('Testes de IntegraÃ§Ã£o - Rotas de Tenants', () => {
+describe('Testes de Integração - Rotas de Tenants', () => {
   const token = jwt.sign({ id: 1, username: 'admin', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
-  test('GET /api/identity/tenants - requer autenticaÃ§Ã£o', async () => {
+  test('GET /api/identity/tenants - requer autenticação', async () => {
     const res = await supertest(app).get('/api/identity/tenants');
     expect(res.status).toBe(401);
   });

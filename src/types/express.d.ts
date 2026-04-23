@@ -8,7 +8,7 @@ declare module 'express' {
       preferred_username: string;
       tenant_id: number;
       roles: string[];
-      id?: number; // ID local na tabela users (apÃ³s provisionamento)
+      id?: number; // ID local na tabela users (após provisionamento)
     };
   }
 }

@@ -12,7 +12,7 @@ export default class ValidateMiddleware {
           .map((issue) => `${issue.path.join('.') || 'body'}: ${issue.message}`)
           .join('; ');
 
-        return ResponseHandler.error(res, `Dados invÃ¡lidos: ${issues}`, 400);
+        return ResponseHandler.error(res, `Dados inválidos: ${issues}`, 400);
       }
 
       req.body = result.data;

@@ -36,7 +36,7 @@ app.use(LogMiddleware.handle);
 
 app.use(router);
 
-app.use((_req: Request, res: Response) => ResponseHandler.error(res, 'Rota nÃ£o encontrada', 404));
+app.use((_req: Request, res: Response) => ResponseHandler.error(res, 'Rota não encontrada', 404));
 app.use(GlobalErrorHandler.handle);
 
 export { server, io, app };

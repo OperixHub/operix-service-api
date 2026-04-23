@@ -9,7 +9,7 @@ function createResponseMock() {
 }
 
 describe('ResponseHandler', () => {
-  test('success retorna payload padronizado para respostas com conteÃºdo', () => {
+  test('success retorna payload padronizado para respostas com conteúdo', () => {
     const res = createResponseMock();
 
     ResponseHandler.success(res, { id: 1 }, 'ok', 200);

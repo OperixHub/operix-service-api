@@ -4,15 +4,15 @@ let ioInstance: Server | null = null;
 
 export default class MessagingService {
   /**
-   * Inicializa o serviÃ§o com a instÃ¢ncia do socket.io.
-   * Deve ser chamado uma Ãºnica vez no bootstrap da aplicaÃ§Ã£o.
+   * Inicializa o serviço com a instância do socket.io.
+   * Deve ser chamado uma única vez no bootstrap da aplicação.
    */
   static init(io: Server) {
     ioInstance = io;
   }
 
   /**
-   * Dispara um evento real-time isolado apenas para os clientes de um Tenant especÃ­fico.
+   * Dispara um evento real-time isolado apenas para os clientes de um Tenant específico.
    */
   static notifyTenant(tenantId: string | number | null, eventName: string, payload: any) {
     if (ioInstance && tenantId) {
@@ -21,7 +21,7 @@ export default class MessagingService {
   }
 
   /**
-   * Dispara um aviso global em tempo real (ex: manutenÃ§Ã£o de servidor).
+   * Dispara um aviso global em tempo real (ex: manutenção de servidor).
    */
   static notifyAll(eventName: string, payload: any) {
     if (ioInstance) {

@@ -28,9 +28,9 @@ export function generateOpenApiDocument() {
     info: {
       version: '1.1.0',
       title: 'Operix Service API',
-      description: 'API RESTful do sistema de gestÃ£o Operix com autenticaÃ§Ã£o via Keycloak, documentaÃ§Ã£o OpenAPI e isolamento multi-tenant.',
+      description: 'API RESTful do sistema de gestão Operix com autenticação via Keycloak, documentação OpenAPI e isolamento multi-tenant.',
       contact: {
-        name: 'JoÃ£o Pedro P. Lima',
+        name: 'João Pedro P. Lima',
         email: 'devx.contato@gmail.com',
       },
     },

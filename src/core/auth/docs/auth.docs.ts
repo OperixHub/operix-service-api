@@ -9,7 +9,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/auth/login',
-    tags: ['AutenticaÃ§Ã£o'],
+    tags: ['Autenticação'],
     request: { body: { content: { 'application/json': { schema: AuthModel.loginSchema } }, required: true } },
     responses: {
       200: {
@@ -22,11 +22,11 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/auth/register',
-    tags: ['AutenticaÃ§Ã£o'],
+    tags: ['Autenticação'],
     request: { body: { content: { 'application/json': { schema: AuthModel.registerSchema } }, required: true } },
     responses: {
       201: {
-        description: 'UsuÃ¡rio criado com sucesso',
+        description: 'Usuário criado com sucesso',
         content: { 'application/json': { schema: AuthModel.registerResponseSchema } },
       },
     },
@@ -35,7 +35,7 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: 'post',
     path: '/auth/refresh',
-    tags: ['AutenticaÃ§Ã£o'],
+    tags: ['Autenticação'],
     request: { body: { content: { 'application/json': { schema: AuthModel.refreshSchema } }, required: true } },
     responses: {
       200: {

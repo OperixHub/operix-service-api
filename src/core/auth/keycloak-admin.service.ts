@@ -38,7 +38,7 @@ export default class KeycloakAdminService {
     });
 
     if (!response.ok) {
-      throw new Error('Credenciais invÃ¡lidas ou erro no serviÃ§o de autenticaÃ§Ã£o.');
+      throw new Error('Credenciais inválidas ou erro no serviço de autenticação.');
     }
 
     return response.json();
@@ -56,7 +56,7 @@ export default class KeycloakAdminService {
     });
 
     if (!response.ok) {
-      throw new Error('Falha ao renovar o token. FaÃ§a login novamente.');
+      throw new Error('Falha ao renovar o token. Faça login novamente.');
     }
 
     return response.json();
@@ -76,7 +76,7 @@ export default class KeycloakAdminService {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`NÃ£o foi possÃ­vel autenticar a administraÃ§Ã£o: ${error}`);
+      throw new Error(`Não foi possível autenticar a administração: ${error}`);
     }
 
     const data = await response.json() as { access_token: string };
@@ -123,7 +123,7 @@ export default class KeycloakAdminService {
 
     const createdGroup = await this.findGroupByName(groupName, adminToken);
     if (!createdGroup) {
-      throw new Error('Grupo criado mas nÃ£o foi possÃ­vel obter seu ID.');
+      throw new Error('Grupo criado mas não foi possível obter seu ID.');
     }
 
     return { groupId: createdGroup.id, created: true };
@@ -153,12 +153,12 @@ export default class KeycloakAdminService {
 
     if (response.status !== 201) {
       const error = await response.text();
-      throw new Error(`Falha ao criar usuÃ¡rio no IAM: ${response.status} - ${error}`);
+      throw new Error(`Falha ao criar usuário no IAM: ${response.status} - ${error}`);
     }
 
     const location = response.headers.get('Location');
     if (!location) {
-      throw new Error('UsuÃ¡rio criado, mas nÃ£o foi possÃ­vel obter seu ID.');
+      throw new Error('Usuário criado, mas não foi possível obter seu ID.');
     }
 
     return location.split('/').pop() as string;
@@ -175,7 +175,7 @@ export default class KeycloakAdminService {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Falha ao adicionar usuÃ¡rio ao grupo: ${response.status} - ${error}`);
+      throw new Error(`Falha ao adicionar usuário ao grupo: ${response.status} - ${error}`);
     }
   }
 
@@ -191,7 +191,7 @@ export default class KeycloakAdminService {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(`Falha ao atualizar atributos do usuÃ¡rio: ${response.status} - ${error}`);
+      throw new Error(`Falha ao atualizar atributos do usuário: ${response.status} - ${error}`);
     }
   }
 
@@ -206,7 +206,7 @@ export default class KeycloakAdminService {
 
     if (!response.ok && response.status !== 404) {
       const error = await response.text();
-      throw new Error(`Falha ao remover usuÃ¡rio do IAM: ${response.status} - ${error}`);
+      throw new Error(`Falha ao remover usuário do IAM: ${response.status} - ${error}`);
     }
   }
 

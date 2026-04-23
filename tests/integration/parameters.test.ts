@@ -28,7 +28,7 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
   return { query, release };
 }
 
-describe('Testes de IntegraÃ§Ã£o - Rotas de ParÃ¢metros (Status e Tipos)', () => {
+describe('Testes de Integração - Rotas de Parâmetros (Status e Tipos)', () => {
   const token = jwt.sign({ id: 1, username: 'admin', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
   // Status Payment
@@ -57,7 +57,7 @@ describe('Testes de IntegraÃ§Ã£o - Rotas de ParÃ¢metros (Status e Tipos)',
     const res = await supertest(app).get('/api/status-service').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Status de serviÃ§o listados com sucesso");
+    expect(res.body.msg).toBe("Status de serviço listados com sucesso");
   });
 
   test('POST /status_service - sucesso', async () => {
@@ -68,7 +68,7 @@ describe('Testes de IntegraÃ§Ã£o - Rotas de ParÃ¢metros (Status e Tipos)',
     const res = await supertest(app).post('/api/status-service').set('Authorization', `Bearer ${token}`).send({ description: 'Done', color: '#000' });
     expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Status de serviÃ§o criado com sucesso");
+    expect(res.body.msg).toBe("Status de serviço criado com sucesso");
   });
 
   // Types Product

@@ -2,11 +2,13 @@ FROM oven/bun:1-alpine
 
 WORKDIR /app
 
-COPY package.json bun.lock tsconfig.json bunfig.toml ./
-RUN bun install --frozen-lockfile
+COPY package.json tsconfig.json bunfig.toml ./
+RUN bun install
 
 COPY . .
 
+ENV NODE_ENV=development
+
 EXPOSE 3333
 
-CMD ["bun", "run", "start"]
+CMD ["sh", "-c", "bun install && bun run dev"]

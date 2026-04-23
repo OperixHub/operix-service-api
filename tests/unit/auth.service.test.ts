@@ -9,7 +9,7 @@ describe('AuthService', () => {
     jest.restoreAllMocks();
   });
 
-  test('register cria tenant, usuÃ¡rio local e sincroniza atributos no Keycloak', async () => {
+  test('register cria tenant, usuário local e sincroniza atributos no Keycloak', async () => {
     jest.spyOn(KeycloakAdminService, 'getAdminToken').mockResolvedValue('admin-token');
     jest.spyOn(KeycloakAdminService, 'ensureGroupExists').mockResolvedValue({ groupId: 'group-1', created: true });
     jest.spyOn(TenantRepository, 'findByKeycloakGroupId').mockResolvedValue(null);
@@ -54,7 +54,7 @@ describe('AuthService', () => {
     }));
   });
 
-  test('register executa compensaÃ§Ã£o quando persistÃªncia local falha', async () => {
+  test('register executa compensação quando persistência local falha', async () => {
     jest.spyOn(KeycloakAdminService, 'getAdminToken').mockResolvedValue('admin-token');
     jest.spyOn(KeycloakAdminService, 'ensureGroupExists').mockResolvedValue({ groupId: 'group-2', created: true });
     jest.spyOn(TenantRepository, 'findByKeycloakGroupId').mockResolvedValue(null);

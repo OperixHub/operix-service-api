@@ -16,7 +16,7 @@ export default class StockModel {
   toJSON() { return { id: this.id, name: this.name, code: this.code, description: this.description, quantity: this.quantity, purchasePrice: this.purchasePrice, salePrice: this.salePrice }; }
 
   static schema = z.object({ id: z.number().nullable().optional(), name: z.string().min(1), code: z.string().min(1), description: z.string().nullable().optional(), quantity: z.number().int(), purchasePrice: z.number(), salePrice: z.number() }).openapi('Stock');
-  static createSchema = z.object({ name: z.string().min(1, 'Campo "Nome" Ã© obrigatÃ³rio.'), code: z.string().min(1, 'Campo "CÃ³digo" Ã© obrigatÃ³rio.'), description: z.string().nullable().optional(), quantity: z.number().int(), purchasePrice: z.number(), salePrice: z.number() }).openapi('StockCreate');
+  static createSchema = z.object({ name: z.string().min(1, 'Campo "Nome" é obrigatório.'), code: z.string().min(1, 'Campo "Código" é obrigatório.'), description: z.string().nullable().optional(), quantity: z.number().int(), purchasePrice: z.number(), salePrice: z.number() }).openapi('StockCreate');
   static responseSchema = z.object({ success: z.boolean(), msg: z.string(), data: StockModel.schema }).openapi('StockResponse');
   static listResponseSchema = z.object({ success: z.boolean(), msg: z.string(), data: z.array(StockModel.schema) }).openapi('StockListResponse');
 }

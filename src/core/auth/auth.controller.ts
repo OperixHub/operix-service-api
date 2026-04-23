@@ -41,7 +41,7 @@ export default class AuthController {
     try {
       const user = UserModel.fromRequest(req.body);
       const data = await AuthService.register(user);
-      return ResponseHandler.success(res, sanitizeUser(data), 'UsuÃ¡rio cadastrado com sucesso!', 201);
+      return ResponseHandler.success(res, sanitizeUser(data), 'Usuário cadastrado com sucesso!', 201);
     } catch (error: any) {
       return ResponseHandler.error(res, error.message || 'Erro ao registrar.', error.status || 400);
     }
@@ -52,7 +52,7 @@ export default class AuthController {
       const data = await AuthService.refreshToken(req.body.refresh_token);
       return ResponseHandler.success(res, data, 'Refresh token realizado com sucesso!', 200);
     } catch (error: any) {
-      return ResponseHandler.error(res, error.message || 'Refresh token invÃ¡lido ou expirado', 401);
+      return ResponseHandler.error(res, error.message || 'Refresh token inválido ou expirado', 401);
     }
   }
 }

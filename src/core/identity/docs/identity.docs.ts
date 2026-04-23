@@ -15,7 +15,7 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     security,
     responses: {
       200: {
-        description: 'Lista de usuÃ¡rios',
+        description: 'Lista de usuários',
         content: { 'application/json': { schema: UserModel.listResponseSchema } },
       },
     },
@@ -27,7 +27,7 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     tags: ['Identidade'],
     security,
     responses: {
-      204: { description: 'UsuÃ¡rio removido com sucesso' },
+      204: { description: 'Usuário removido com sucesso' },
     },
   });
 
