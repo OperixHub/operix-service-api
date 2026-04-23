@@ -4,10 +4,20 @@ import connection from '../../src/core/database/connection.js';
 import jwt from 'jsonwebtoken';
 import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
 
+const permissions = [
+  'dashboard.access',
+  'operational.services.access',
+  'operational.status.access',
+  'operational.types-products.access',
+  'inventory.stock.access',
+  'organization.users.access',
+  'organization.tenants.access',
+  'notifications.system-info.access',
+];
 
 beforeAll(() => {
   jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
-    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'] };
+    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'], permissions };
   });
 });
 

@@ -1,6 +1,6 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { tenantCreateSchema, tenantListResponseSchema, tenantSchema } from '../tenants/tenants.schema.js';
-import { userListResponseSchema, userPublicSchema } from '../users/users.schema.js';
+import { userCreateSchema, userListResponseSchema, userPublicSchema, userResponseSchema } from '../users/users.schema.js';
 
 export function registerIdentityDocs(registry: OpenAPIRegistry) {
   registry.register('User', userPublicSchema);
@@ -17,6 +17,25 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
       200: {
         description: 'Lista de usuários',
         content: { 'application/json': { schema: userListResponseSchema } },
+      },
+    },
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/users',
+    tags: ['Identidade'],
+    security,
+    request: {
+      body: {
+        content: { 'application/json': { schema: userCreateSchema } },
+        required: true,
+      },
+    },
+    responses: {
+      201: {
+        description: 'Usuário criado com sucesso',
+        content: { 'application/json': { schema: userResponseSchema } },
       },
     },
   });

@@ -4,6 +4,17 @@ import { app } from '../../src/core/app';
 import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
 import SystemInfoService from '../../src/modules/notifications/system-info/system-info.service.js';
 
+const permissions = [
+  'dashboard.access',
+  'operational.services.access',
+  'operational.status.access',
+  'operational.types-products.access',
+  'inventory.stock.access',
+  'organization.users.access',
+  'organization.tenants.access',
+  'notifications.system-info.access',
+];
+
 beforeAll(() => {
   jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async () => ({
     id: 1,
@@ -11,6 +22,7 @@ beforeAll(() => {
     admin: true,
     tenant_id: 1,
     roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'],
+    permissions,
   }));
 });
 

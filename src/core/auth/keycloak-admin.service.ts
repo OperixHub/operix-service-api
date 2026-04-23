@@ -7,6 +7,12 @@ interface Group {
   attributes?: Record<string, string[]>;
 }
 
+interface RealmRole {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 type CreateUserPayload = {
   username: string;
   email: string;
@@ -223,5 +229,73 @@ export default class KeycloakAdminService {
       const error = await response.text();
       throw new Error(`Falha ao remover grupo do IAM: ${response.status} - ${error}`);
     }
+  }
+
+  static async getRealmRolesByNames(roleNames: string[], adminToken: string) {
+    if (roleNames.length === 0) {
+      return [];
+    }
+
+    const response = await fetch(`${this.adminBaseUrl}/roles`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao listar roles do IAM: ${response.status} - ${error}`);
+    }
+
+    const roles = await response.json() as RealmRole[];
+    return roles.filter((role) => roleNames.includes(role.name));
+  }
+
+  static async assignRealmRoles(userId: string, roleNames: string[], adminToken: string) {
+    if (roleNames.length === 0) {
+      return;
+    }
+
+    const roles = await this.getRealmRolesByNames(roleNames, adminToken);
+    const missingRoles = roleNames.filter((roleName) => !roles.some((role) => role.name === roleName));
+
+    if (missingRoles.length > 0) {
+      throw new Error(`Roles não encontradas no IAM: ${missingRoles.join(', ')}`);
+    }
+
+    const response = await fetch(`${this.adminBaseUrl}/users/${userId}/role-mappings/realm`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(roles),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao atribuir roles ao usuário: ${response.status} - ${error}`);
+    }
+  }
+
+  static async getUserRealmRoleNames(userId: string) {
+    const adminToken = await this.getAdminToken();
+    const response = await fetch(`${this.adminBaseUrl}/users/${userId}/role-mappings/realm`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao consultar roles do usuário: ${response.status} - ${error}`);
+    }
+
+    const roles = await response.json() as RealmRole[];
+    return roles.map((role) => role.name);
   }
 }

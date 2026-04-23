@@ -5,7 +5,7 @@ class UsersRepository {
   static async getAll(tenantId: number) {
     const connect = await connection.connect();
     const result = await connect.query(
-      'SELECT id, username, email, tenant_id, admin, root FROM users WHERE tenant_id = $1 ORDER BY id',
+      'SELECT id, name, username, email, tenant_id, admin, root FROM users WHERE tenant_id = $1 ORDER BY id',
       [tenantId],
     );
     connect.release();
@@ -17,6 +17,13 @@ class UsersRepository {
     const result = await connect.query('SELECT * FROM users WHERE id = $1 AND tenant_id = $2', [user.id, tenantId]);
     connect.release();
     return result.rows;
+  }
+
+  static async findByIdAndTenantId(id: number, tenantId: number) {
+    const connect = await connection.connect();
+    const result = await connect.query('SELECT * FROM users WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+    connect.release();
+    return result.rows[0] || null;
   }
 
   static async remove(user: UserModel, tenantId: number) {

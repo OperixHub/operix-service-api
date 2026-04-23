@@ -38,6 +38,13 @@ class TenantsRepository {
     connect.release();
     return result.rows[0] || null;
   }
+
+  static async findById(id: number) {
+    const connect = await connection.connect();
+    const result = await connect.query(`SELECT * FROM ${this.tableName} WHERE id = $1`, [id]);
+    connect.release();
+    return result.rows[0] || null;
+  }
 }
 
 export default TenantsRepository;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import RolesMiddleware from '../../core/middlewares/roles.middleware.js';
 import ValidateMiddleware from '../../core/middlewares/validate.middleware.js';
+import PermissionsMiddleware from '../../core/permissions/permissions.middleware.js';
 
 import ServicesController from './services/services.controller.js';
 import { serviceCreateSchema, serviceUpdateInfoClientSchema } from './services/services.schema.js';
@@ -19,38 +19,65 @@ import { typeProductCreateSchema } from './types-product/types-product.schema.js
 
 const router = Router();
 
-// Toda rota deste módulo exige a role module:operational
-router.use(RolesMiddleware.requireRole('module:operational'));
-
 // --- Services ---
-router.get('/services', ServicesController.getAll);
-router.get('/services/warehouse', ServicesController.getAllWharehouse);
-router.post('/services', ValidateMiddleware.validateSchema(serviceCreateSchema), ServicesController.create);
-router.put('/services/warehouse/:id/:value', ServicesController.updateWarehouse);
-router.put('/services/info/client/:id', ValidateMiddleware.validateSchema(serviceUpdateInfoClientSchema), ServicesController.updateInfoClient);
-router.put('/services/status/:id/:status', ServicesController.updateStatusService);
-router.put('/services/status/payment/:id/:status', ServicesController.updateStatusPayment);
-router.delete('/services/:id/:cod/:typeTable', ServicesController.remove);
+router.get('/services', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.getAll);
+router.get('/services/warehouse', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.getAllWharehouse);
+router.post(
+  '/services',
+  PermissionsMiddleware.requirePermission('operational.services.access'),
+  ValidateMiddleware.validateSchema(serviceCreateSchema),
+  ServicesController.create,
+);
+router.put('/services/warehouse/:id/:value', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.updateWarehouse);
+router.put(
+  '/services/info/client/:id',
+  PermissionsMiddleware.requirePermission('operational.services.access'),
+  ValidateMiddleware.validateSchema(serviceUpdateInfoClientSchema),
+  ServicesController.updateInfoClient,
+);
+router.put('/services/status/:id/:status', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.updateStatusService);
+router.put('/services/status/payment/:id/:status', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.updateStatusPayment);
+router.delete('/services/:id/:cod/:typeTable', PermissionsMiddleware.requirePermission('operational.services.access'), ServicesController.remove);
 
 // --- Order of Service ---
-router.get('/order-of-service', OrderOfServiceController.getAll);
-router.get('/order-of-service/:cod', OrderOfServiceController.getUnique);
-router.put('/order-of-service/estimate/:cod', ValidateMiddleware.validateSchema(orderUpdateEstimateSchema), OrderOfServiceController.updateEstimate);
-router.delete('/order-of-service/estimate/:cod/:idEstimate', OrderOfServiceController.removeEstimate);
+router.get('/order-of-service', PermissionsMiddleware.requirePermission('operational.services.access'), OrderOfServiceController.getAll);
+router.get('/order-of-service/:cod', PermissionsMiddleware.requirePermission('operational.services.access'), OrderOfServiceController.getUnique);
+router.put(
+  '/order-of-service/estimate/:cod',
+  PermissionsMiddleware.requirePermission('operational.services.access'),
+  ValidateMiddleware.validateSchema(orderUpdateEstimateSchema),
+  OrderOfServiceController.updateEstimate,
+);
+router.delete('/order-of-service/estimate/:cod/:idEstimate', PermissionsMiddleware.requirePermission('operational.services.access'), OrderOfServiceController.removeEstimate);
 
 // --- Status Service ---
-router.get('/status-service', StatusServiceController.getAll);
-router.post('/status-service', ValidateMiddleware.validateSchema(statusServiceCreateSchema), StatusServiceController.create);
-router.delete('/status-service/:id', StatusServiceController.remove);
+router.get('/status-service', PermissionsMiddleware.requirePermission('operational.status.access'), StatusServiceController.getAll);
+router.post(
+  '/status-service',
+  PermissionsMiddleware.requirePermission('operational.status.access'),
+  ValidateMiddleware.validateSchema(statusServiceCreateSchema),
+  StatusServiceController.create,
+);
+router.delete('/status-service/:id', PermissionsMiddleware.requirePermission('operational.status.access'), StatusServiceController.remove);
 
 // --- Status Payment ---
-router.get('/status-payment', StatusPaymentController.getAll);
-router.post('/status-payment', ValidateMiddleware.validateSchema(statusPaymentCreateSchema), StatusPaymentController.create);
-router.delete('/status-payment/:id', StatusPaymentController.remove);
+router.get('/status-payment', PermissionsMiddleware.requirePermission('operational.status.access'), StatusPaymentController.getAll);
+router.post(
+  '/status-payment',
+  PermissionsMiddleware.requirePermission('operational.status.access'),
+  ValidateMiddleware.validateSchema(statusPaymentCreateSchema),
+  StatusPaymentController.create,
+);
+router.delete('/status-payment/:id', PermissionsMiddleware.requirePermission('operational.status.access'), StatusPaymentController.remove);
 
 // --- Types Product ---
-router.get('/types-product', TypesProductController.getAll);
-router.post('/types-product', ValidateMiddleware.validateSchema(typeProductCreateSchema), TypesProductController.create);
-router.delete('/types-product/:id', TypesProductController.remove);
+router.get('/types-product', PermissionsMiddleware.requirePermission('operational.types-products.access'), TypesProductController.getAll);
+router.post(
+  '/types-product',
+  PermissionsMiddleware.requirePermission('operational.types-products.access'),
+  ValidateMiddleware.validateSchema(typeProductCreateSchema),
+  TypesProductController.create,
+);
+router.delete('/types-product/:id', PermissionsMiddleware.requirePermission('operational.types-products.access'), TypesProductController.remove);
 
 export default router;

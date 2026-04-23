@@ -5,6 +5,7 @@ import { registerOperationalDocs } from '../../modules/operational/docs/operatio
 import { registerAuthDocs } from '../auth/docs/auth.docs.js';
 import { registerIdentityDocs } from '../identity/docs/identity.docs.js';
 import { registerLogsDocs } from '../logs/docs/logs.docs.js';
+import { registerPermissionsDocs } from '../permissions/permissions.docs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -17,6 +18,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 registerOperationalDocs(registry);
 registerInventoryDocs(registry);
 registerIdentityDocs(registry);
+registerPermissionsDocs(registry);
 registerNotificationsDocs(registry);
 registerAuthDocs(registry);
 registerLogsDocs(registry);
@@ -39,6 +41,7 @@ export function generateOpenApiDocument() {
       { name: 'Identidade', description: '[Core] Endpoints de consulta e remoção de usuários vinculados ao tenant autenticado.' },
       { name: 'Unidades', description: '[Core] Endpoints de gerenciamento das unidades da aplicação, representadas como tenants.' },
       { name: 'Logs', description: '[Core] Endpoints para consulta paginada de logs e rastreamento de eventos da aplicação.' },
+      { name: 'Permissões', description: '[Core] Endpoints para resolver permissões efetivas, catálogo de acesso e overrides por usuário.' },
       { name: 'Estoque', description: '[Module Inventory] Endpoints de cadastro, listagem, atualização e remoção de itens de estoque.' },
       { name: 'Notificações', description: '[Module Notifications] Endpoints de informações do sistema e base para futuros canais como e-mail e WhatsApp.' },
       { name: 'Serviços', description: '[Module Operational] Endpoints de gerenciamento de serviços, status operacionais e fluxo de almoxarifado.' },

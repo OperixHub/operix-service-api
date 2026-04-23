@@ -9,6 +9,16 @@ export default class UsersController {
     return ResponseHandler.success(res, await UsersService.getAll(tenantId), 'Usuários listados com sucesso');
   }
 
+  static async create(req: Request, res: Response) {
+    const createdUser = await UsersService.create(
+      UserModel.fromRequest(req.body),
+      (req as any).user,
+      req.body.modules,
+    );
+
+    return ResponseHandler.success(res, createdUser, 'Usuário criado com sucesso', 201);
+  }
+
   static async remove(req: Request, res: Response) {
     const { tenant_id: tenantId } = (req as any).user;
     const user = UserModel.fromRequestParams(req.params);
