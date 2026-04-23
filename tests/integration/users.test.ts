@@ -28,12 +28,12 @@ function mockConnectWithResponses(responder: (sql: string, params: any[]) => any
 describe('Testes de Integração - Rotas de Usuários', () => {
   const token = jwt.sign({ id: 1, username: 'adminuser', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
-  test('GET /api/identity/users - requer autenticação', async () => {
-    const res = await supertest(app).get('/api/identity/users');
+  test('GET /api/users - requer autenticação', async () => {
+    const res = await supertest(app).get('/api/users');
     expect(res.status).toBe(401);
   });
 
-  test('GET /api/identity/users - retorna lista de usuários do tenant', async () => {
+  test('GET /api/users - retorna lista de usuários do tenant', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('SELECT id, username, email, tenant_id, admin, root FROM users')) {
         return { rows: [{ id: 1, username: 'adminuser', email: 'admin@operix.dev', tenant_id: 1, admin: true, root: true }], rowCount: 1 };
@@ -42,7 +42,7 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     });
 
     const res = await supertest(app)
-      .get('/api/identity/users')
+      .get('/api/users')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -51,11 +51,11 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     expect(res.body.data).toEqual([{ id: 1, username: 'adminuser', email: 'admin@operix.dev', tenant_id: 1, admin: true, root: true }]);
   });
 
-  test('DELETE /api/identity/users/:id - usuário não encontrado', async () => {
+  test('DELETE /api/users/:id - usuário não encontrado', async () => {
     mockConnectWithResponses(() => ({ rows: [], rowCount: 0 }));
 
     const res = await supertest(app)
-      .delete('/api/identity/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(404);
@@ -63,7 +63,7 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     expect(res.body.msg).toBe('Usuário não encontrado.');
   });
 
-  test('DELETE /api/identity/users/:id - administrador não pode ser removido', async () => {
+  test('DELETE /api/users/:id - administrador não pode ser removido', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('SELECT * FROM users WHERE id = $1 AND tenant_id = $2')) {
         return { rows: [{ admin: true }], rowCount: 1 };
@@ -72,7 +72,7 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     });
 
     const res = await supertest(app)
-      .delete('/api/identity/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(422);
@@ -80,7 +80,7 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     expect(res.body.msg).toBe('Usuário administrador não pode ser removido.');
   });
 
-  test('DELETE /api/identity/users/:id - sucesso retorna 204 sem body', async () => {
+  test('DELETE /api/users/:id - sucesso retorna 204 sem body', async () => {
     mockConnectWithResponses((sql) => {
       if (sql.includes('SELECT * FROM users WHERE id = $1 AND tenant_id = $2')) {
         return { rows: [{ admin: false }], rowCount: 1 };
@@ -92,7 +92,7 @@ describe('Testes de Integração - Rotas de Usuários', () => {
     });
 
     const res = await supertest(app)
-      .delete('/api/identity/users/2')
+      .delete('/api/users/2')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);

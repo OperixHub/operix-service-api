@@ -21,16 +21,16 @@ afterEach(() => {
 describe('Testes de Integração - Rotas de Tenants', () => {
   const token = jwt.sign({ id: 1, username: 'admin', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
 
-  test('GET /api/identity/tenants - requer autenticação', async () => {
-    const res = await supertest(app).get('/api/identity/tenants');
+  test('GET /api/tenants - requer autenticação', async () => {
+    const res = await supertest(app).get('/api/tenants');
     expect(res.status).toBe(401);
   });
 
-  test('GET /api/identity/tenants - sucesso', async () => {
+  test('GET /api/tenants - sucesso', async () => {
     jest.spyOn(TenantsService, 'getAll').mockResolvedValue([{ id: 1, name: 'Tenant A', keycloak_group_id: 'group-1' } as any]);
 
     const res = await supertest(app)
-      .get('/api/identity/tenants')
+      .get('/api/tenants')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
@@ -39,11 +39,11 @@ describe('Testes de Integração - Rotas de Tenants', () => {
     expect(res.body.msg).toBe('Unidades listadas com sucesso');
   });
 
-  test('POST /api/identity/tenants - sucesso ao criar tenant', async () => {
+  test('POST /api/tenants - sucesso ao criar tenant', async () => {
     jest.spyOn(TenantsService, 'create').mockResolvedValue({ id: 10, name: 'Novo Tenant', keycloak_group_id: 'group-10' } as any);
 
     const res = await supertest(app)
-      .post('/api/identity/tenants')
+      .post('/api/tenants')
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Novo Tenant' });
 
@@ -53,11 +53,11 @@ describe('Testes de Integração - Rotas de Tenants', () => {
     expect(res.body.msg).toBe('Unidade criada com sucesso');
   });
 
-  test('DELETE /api/identity/tenants/:id - sucesso ao remover', async () => {
+  test('DELETE /api/tenants/:id - sucesso ao remover', async () => {
     jest.spyOn(TenantsService, 'remove').mockResolvedValue(true as never);
 
     const res = await supertest(app)
-      .delete('/api/identity/tenants/1')
+      .delete('/api/tenants/1')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(204);
