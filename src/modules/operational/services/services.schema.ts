@@ -1,7 +1,5 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
+import { buildApiListResponseSchema, buildApiResponseSchema } from '../../../core/schemas/api-response.schema.js';
+import { z } from '../../../core/schemas/zod-openapi.js';
 
 const serviceSchema = z.object({
   id: z.number().nullable().optional(),
@@ -21,32 +19,28 @@ const serviceSchema = z.object({
   created_at_warehouse: z.string().nullable().optional(),
 }).openapi('Service');
 
-const serviceCreateSchema = z.object({
+const serviceCreateSchema = serviceSchema.pick({
+  product: true,
+  client: true,
+  telephone: true,
+  status: true,
+}).extend({
   product: z.string().min(1, 'Campo "Produto" é obrigatório.'),
   client: z.string().min(1, 'Campo "Cliente" é obrigatório.'),
   telephone: z.string().min(1, 'Campo "Telefone" é obrigatório.'),
   status: z.union([z.string(), z.number()]).refine((val) => val !== '', { message: 'Campo "Status" é obrigatório.' }),
 }).openapi('ServiceCreate');
 
-const serviceUpdateInfoClientSchema = z.object({
-  product: z.string().min(1),
-  client: z.string().min(1),
-  telephone: z.string().min(1),
-  adress: z.string().optional(),
-  observation: z.string().optional(),
+const serviceUpdateInfoClientSchema = serviceSchema.pick({
+  product: true,
+  client: true,
+  telephone: true,
+  adress: true,
+  observation: true,
 }).openapi('ServiceUpdateInfoClient');
 
-const serviceResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: serviceSchema,
-}).openapi('ServiceResponse');
-
-const serviceListResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.array(serviceSchema),
-}).openapi('ServiceListResponse');
+const serviceResponseSchema = buildApiResponseSchema(serviceSchema, 'ServiceResponse');
+const serviceListResponseSchema = buildApiListResponseSchema(serviceSchema, 'ServiceListResponse');
 
 export {
   serviceSchema,

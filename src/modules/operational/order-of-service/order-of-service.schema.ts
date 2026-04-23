@@ -1,7 +1,5 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
+import { buildApiListResponseSchema, buildApiResponseSchema } from '../../../core/schemas/api-response.schema.js';
+import { z } from '../../../core/schemas/zod-openapi.js';
 
 const orderOfServiceSchema = z.object({
   cod_order: z.union([z.string(), z.number()]).nullable().optional(),
@@ -11,8 +9,10 @@ const orderOfServiceSchema = z.object({
   created_at: z.string().nullable().optional(),
 }).openapi('OrderOfService');
 
-const orderOfServiceCreateSchema = z.object({
-  estimate: z.string().nullable().optional(),
+const orderOfServiceCreateSchema = orderOfServiceSchema.pick({
+  estimate: true,
+  value: true,
+}).extend({
   value: z.number(),
 }).openapi('OrderOfServiceCreate');
 
@@ -27,17 +27,8 @@ const orderUpdateEstimateSchema = z.object({
   }
 }).openapi('OrderUpdateEstimate');
 
-const orderOfServiceResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: orderOfServiceSchema,
-}).openapi('OrderOfServiceResponse');
-
-const orderOfServiceListResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.array(orderOfServiceSchema),
-}).openapi('OrderOfServiceListResponse');
+const orderOfServiceResponseSchema = buildApiResponseSchema(orderOfServiceSchema, 'OrderOfServiceResponse');
+const orderOfServiceListResponseSchema = buildApiListResponseSchema(orderOfServiceSchema, 'OrderOfServiceListResponse');
 
 export {
   orderOfServiceSchema,

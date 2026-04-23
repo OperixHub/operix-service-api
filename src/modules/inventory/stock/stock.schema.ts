@@ -1,7 +1,5 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
+import { buildApiListResponseSchema, buildApiResponseSchema } from '../../../core/schemas/api-response.schema.js';
+import { z } from '../../../core/schemas/zod-openapi.js';
 
 const stockSchema = z.object({
   id: z.number().nullable().optional(),
@@ -13,25 +11,14 @@ const stockSchema = z.object({
   salePrice: z.number(),
 }).openapi('Stock');
 
-const stockCreateSchema = z.object({
+const stockCreateSchema = stockSchema.omit({
+  id: true,
+}).extend({
   name: z.string().min(1, 'Campo "Nome" é obrigatório.'),
   code: z.string().min(1, 'Campo "Código" é obrigatório.'),
-  description: z.string().nullable().optional(),
-  quantity: z.number().int(),
-  purchasePrice: z.number(),
-  salePrice: z.number(),
 }).openapi('StockCreate');
 
-const stockResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: stockSchema,
-}).openapi('StockResponse');
-
-const stockListResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.array(stockSchema),
-}).openapi('StockListResponse');
+const stockResponseSchema = buildApiResponseSchema(stockSchema, 'StockResponse');
+const stockListResponseSchema = buildApiListResponseSchema(stockSchema, 'StockListResponse');
 
 export { stockSchema, stockCreateSchema, stockResponseSchema, stockListResponseSchema };

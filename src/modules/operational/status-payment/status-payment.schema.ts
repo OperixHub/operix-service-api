@@ -1,7 +1,5 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
+import { buildApiListResponseSchema, buildApiResponseSchema } from '../../../core/schemas/api-response.schema.js';
+import { z } from '../../../core/schemas/zod-openapi.js';
 
 const statusPaymentSchema = z.object({
   id: z.number().nullable().optional(),
@@ -11,23 +9,15 @@ const statusPaymentSchema = z.object({
   color: z.string(),
 }).openapi('StatusPayment');
 
-const statusPaymentCreateSchema = z.object({
-  cod: z.number().nullable(),
+const statusPaymentCreateSchema = statusPaymentSchema.omit({
+  id: true,
+  tenant_id: true,
+}).extend({
   description: z.string().min(1, 'Campo "Descrição" é obrigatório.'),
-  color: z.string(),
 }).openapi('StatusPaymentCreate');
 
-const statusPaymentResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: statusPaymentSchema,
-}).openapi('StatusPaymentResponse');
-
-const statusPaymentListResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.array(statusPaymentSchema),
-}).openapi('StatusPaymentListResponse');
+const statusPaymentResponseSchema = buildApiResponseSchema(statusPaymentSchema, 'StatusPaymentResponse');
+const statusPaymentListResponseSchema = buildApiListResponseSchema(statusPaymentSchema, 'StatusPaymentListResponse');
 
 export {
   statusPaymentSchema,

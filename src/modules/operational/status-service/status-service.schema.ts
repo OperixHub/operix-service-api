@@ -1,7 +1,5 @@
-import { z } from 'zod';
-import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-
-extendZodWithOpenApi(z);
+import { buildApiListResponseSchema, buildApiResponseSchema } from '../../../core/schemas/api-response.schema.js';
+import { z } from '../../../core/schemas/zod-openapi.js';
 
 const statusServiceSchema = z.object({
   id: z.number().nullable().optional(),
@@ -11,23 +9,15 @@ const statusServiceSchema = z.object({
   color: z.string().optional(),
 }).openapi('StatusService');
 
-const statusServiceCreateSchema = z.object({
+const statusServiceCreateSchema = statusServiceSchema.omit({
+  id: true,
+  tenant_id: true,
+}).extend({
   description: z.string().min(1, 'Campo "Descrição" é obrigatório.'),
-  color: z.string().optional(),
-  cod: z.number().nullable().optional(),
 }).openapi('StatusServiceCreate');
 
-const statusServiceResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: statusServiceSchema,
-}).openapi('StatusServiceResponse');
-
-const statusServiceListResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.array(statusServiceSchema),
-}).openapi('StatusServiceListResponse');
+const statusServiceResponseSchema = buildApiResponseSchema(statusServiceSchema, 'StatusServiceResponse');
+const statusServiceListResponseSchema = buildApiListResponseSchema(statusServiceSchema, 'StatusServiceListResponse');
 
 export {
   statusServiceSchema,
