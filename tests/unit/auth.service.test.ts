@@ -1,8 +1,8 @@
 import AuthService from '../../src/core/auth/auth.service.js';
 import KeycloakAdminService from '../../src/core/auth/keycloak-admin.service.js';
-import TenantRepository from '../../src/core/identity/tenants/tenants.repository.js';
-import UsersRepository from '../../src/core/identity/users/users.repository.js';
-import UserModel from '../../src/core/identity/users/users.model.js';
+import TenantRepository from '../../src/core/profile/tenants/tenants.repository.js';
+import UsersRepository from '../../src/core/profile/users/users.repository.js';
+import UserModel from '../../src/core/profile/users/users.model.js';
 
 describe('AuthService', () => {
   afterEach(() => {

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import ValidateMiddleware from '../../core/middlewares/validate.middleware.js';
 import StockController from './stock/stock.controller.js';
 import { stockCreateSchema } from './stock/stock.schema.js';
-import PermissionsMiddleware from '../../core/permissions/permissions.middleware.js';
+import PermissionsMiddleware from '../../core/middlewares/permissions.middleware.js';
 
 const router = Router();
 

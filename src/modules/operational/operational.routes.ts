@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import ValidateMiddleware from '../../core/middlewares/validate.middleware.js';
-import PermissionsMiddleware from '../../core/permissions/permissions.middleware.js';
+import PermissionsMiddleware from '../../core/middlewares/permissions.middleware.js';
 
 import ServicesController from './services/services.controller.js';
 import { serviceCreateSchema, serviceUpdateInfoClientSchema } from './services/services.schema.js';

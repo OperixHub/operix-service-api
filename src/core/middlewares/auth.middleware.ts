@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import jwksClient from 'jwks-rsa';
 import ResponseHandler from '../utils/response-handler.js';
 import connection from '../database/connection.js';
-import UsersRepository from '../identity/users/users.repository.js';
-import UserModel from '../identity/users/users.model.js';
-import TenantRepository from '../identity/tenants/tenants.repository.js';
+import UsersRepository from '../profile/users/users.repository.js';
+import UserModel from '../profile/users/users.model.js';
+import TenantRepository from '../profile/tenants/tenants.repository.js';
 import { env } from '../config/env.js';
 
 const client = jwksClient({

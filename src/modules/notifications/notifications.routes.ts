@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import SystemInfoController from './system-info/system-info.controller.js';
-import PermissionsMiddleware from '../../core/permissions/permissions.middleware.js';
+import PermissionsMiddleware from '../../core/middlewares/permissions.middleware.js';
 
 const router = Router();
 

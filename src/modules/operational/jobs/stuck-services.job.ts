@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 // Usa apenas as APIs públicas dos módulos (nunca internals)
 import { ServicesQueryService } from '../index.js';
-import TenantsRepository from '../../../core/identity/tenants/tenants.repository.js';
+import TenantsRepository from '../../../core/profile/tenants/tenants.repository.js';
 import MessagingService from '../../../core/utils/messaging.service.js';
 
 export default class StuckServicesJob {

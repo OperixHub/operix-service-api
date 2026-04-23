@@ -1,6 +1,6 @@
-import { buildApiResponseSchema } from '../schemas/api-response.schema.js';
-import { z } from '../schemas/zod-openapi.js';
-import { userPublicSchema } from '../identity/users/users.schema.js';
+import { buildApiResponseSchema } from '../../schemas/api-response.schema.js';
+import { z } from '../../schemas/zod-openapi.js';
+import { userPublicSchema } from '../users/users.schema.js';
 import { manageableModuleKeys } from './permissions.catalog.js';
 
 const manageableModuleKeySchema = z.enum(manageableModuleKeys);

@@ -1,6 +1,6 @@
 import { buildApiListResponseSchema, buildApiResponseSchema } from '../../schemas/api-response.schema.js';
 import { z } from '../../schemas/zod-openapi.js';
-import { manageableModuleKeys } from '../../permissions/permissions.catalog.js';
+import { manageableModuleKeys } from '../permissions/permissions.catalog.js';
 
 const userSchema = z.object({
   id: z.number().nullable().optional(),

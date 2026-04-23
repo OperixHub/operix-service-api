@@ -2,8 +2,8 @@ import type { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import AuthService from './auth.service.js';
 import ResponseHandler from '../utils/response-handler.js';
-import UserModel from '../identity/users/users.model.js';
-import UsersRepository from '../identity/users/users.repository.js';
+import UserModel from '../profile/users/users.model.js';
+import UsersRepository from '../profile/users/users.repository.js';
 import { sanitizeUser } from '../utils/sanitize.js';
 
 export default class AuthController {

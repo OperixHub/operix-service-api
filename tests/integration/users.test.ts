@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { app } from '../../src/core/app';
 import connection from '../../src/core/database/connection.js';
 import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
-import UsersService from '../../src/core/identity/users/users.service.js';
+import UsersService from '../../src/core/profile/users/users.service.js';
 
 const permissions = [
   'dashboard.access',

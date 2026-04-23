@@ -1,8 +1,8 @@
 import ValidationError from '../utils/validation-error.js';
-import TenantModel from '../identity/tenants/tenants.model.js';
-import TenantRepository from '../identity/tenants/tenants.repository.js';
-import UsersRepository from '../identity/users/users.repository.js';
-import UserModel from '../identity/users/users.model.js';
+import TenantModel from '../profile/tenants/tenants.model.js';
+import TenantRepository from '../profile/tenants/tenants.repository.js';
+import UsersRepository from '../profile/users/users.repository.js';
+import UserModel from '../profile/users/users.model.js';
 import KeycloakAdminService from './keycloak-admin.service.js';
 import { sanitizeUser } from '../utils/sanitize.js';
 

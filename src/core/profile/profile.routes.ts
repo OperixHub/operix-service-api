@@ -4,7 +4,9 @@ import TenantsController from './tenants/tenants.controller.js';
 import ValidateMiddleware from '../middlewares/validate.middleware.js';
 import { tenantCreateSchema } from './tenants/tenants.schema.js';
 import { userCreateSchema } from './users/users.schema.js';
-import PermissionsMiddleware from '../permissions/permissions.middleware.js';
+import PermissionsMiddleware from '../middlewares/permissions.middleware.js';
+import PermissionsController from './permissions/permissions.controller.js';
+import { permissionOverridesUpdateSchema } from './permissions/permissions.schema.js';
 
 const router = Router();
 
@@ -39,5 +41,28 @@ router.delete(
   PermissionsMiddleware.requireAdmin(),
   TenantsController.remove,
 );
+
+//Permissions
+router.get('/permissions/me', PermissionsController.getMe);
+router.get(
+  '/permissions/catalog',
+  PermissionsMiddleware.requirePermission('organization.users.access'),
+  PermissionsMiddleware.requireAdmin(),
+  PermissionsController.getCatalog,
+);
+router.get(
+  '/permissions/users/:id',
+  PermissionsMiddleware.requirePermission('organization.users.access'),
+  PermissionsMiddleware.requireAdmin(),
+  PermissionsController.getUser,
+);
+router.put(
+  '/permissions/users/:id',
+  PermissionsMiddleware.requirePermission('organization.users.access'),
+  PermissionsMiddleware.requireAdmin(),
+  ValidateMiddleware.validateSchema(permissionOverridesUpdateSchema),
+  PermissionsController.replaceUserOverrides,
+);
+
 
 export default router;

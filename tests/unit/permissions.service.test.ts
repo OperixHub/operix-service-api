@@ -1,4 +1,4 @@
-import PermissionsService from '../../src/core/permissions/permissions.service.js';
+import PermissionsService from '../../src/core/profile/permissions/permissions.service.js';
 
 describe('PermissionsService', () => {
   test('resolve permissões a partir das roles', () => {

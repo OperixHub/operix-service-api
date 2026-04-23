@@ -3,7 +3,7 @@ import type UserModel from './users.model.js';
 import UsersRepository from './users.repository.js';
 import TenantsRepository from '../tenants/tenants.repository.js';
 import KeycloakAdminService from '../../auth/keycloak-admin.service.js';
-import { getRoleKeyForModule } from '../../permissions/permissions.catalog.js';
+import { getRoleKeyForModule } from '../permissions/permissions.catalog.js';
 import { sanitizeUser } from '../../utils/sanitize.js';
 
 export default class UsersService {

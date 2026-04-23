@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import ResponseHandler from '../utils/response-handler.js';
+import ResponseHandler from '../../utils/response-handler.js';
 import PermissionsService from './permissions.service.js';
 
 export default class PermissionsController {

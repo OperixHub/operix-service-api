@@ -2,8 +2,8 @@ import supertest from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../src/core/app';
 import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
-import PermissionsRepository from '../../src/core/permissions/permissions.repository.js';
-import UsersRepository from '../../src/core/identity/users/users.repository.js';
+import PermissionsRepository from '../../src/core/profile/permissions/permissions.repository.js';
+import UsersRepository from '../../src/core/profile/users/users.repository.js';
 import KeycloakAdminService from '../../src/core/auth/keycloak-admin.service.js';
 
 const permissions = [

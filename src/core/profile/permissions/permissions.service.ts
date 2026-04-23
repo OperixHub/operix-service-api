@@ -1,7 +1,7 @@
-import ValidationError from '../utils/validation-error.js';
-import { sanitizeUser } from '../utils/sanitize.js';
-import UsersRepository from '../identity/users/users.repository.js';
-import KeycloakAdminService from '../auth/keycloak-admin.service.js';
+import ValidationError from '../../utils/validation-error.js';
+import { sanitizeUser } from '../../utils/sanitize.js';
+import UsersRepository from '../users/users.repository.js';
+import KeycloakAdminService from '../../auth/keycloak-admin.service.js';
 import PermissionsRepository from './permissions.repository.js';
 import {
   getManageableModuleCatalog,

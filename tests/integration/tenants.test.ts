@@ -2,7 +2,7 @@ import supertest from 'supertest';
 import jwt from 'jsonwebtoken';
 import { app } from '../../src/core/app';
 import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
-import TenantsService from '../../src/core/identity/tenants/tenants.service.js';
+import TenantsService from '../../src/core/profile/tenants/tenants.service.js';
 
 const permissions = [
   'dashboard.access',
