@@ -4,6 +4,7 @@ declare module 'express' {
   interface Request {
     user?: {
       sub: string;
+      keycloak_id?: string | null;
       email: string;
       name?: string | null;
       username?: string | null;

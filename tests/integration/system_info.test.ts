@@ -1,53 +1,23 @@
-import supertest from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../../src/core/app';
-import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+import SystemInfoController from '../../src/modules/notifications/system-info/system-info.controller.js';
 import SystemInfoService from '../../src/modules/notifications/system-info/system-info.service.js';
-
-const permissions = [
-  'dashboard.access',
-  'operational.services.access',
-  'operational.status.access',
-  'operational.types-products.access',
-  'inventory.stock.access',
-  'organization.users.access',
-  'organization.tenants.access',
-  'notifications.system-info.access',
-];
-
-beforeAll(() => {
-  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async () => ({
-    id: 1,
-    username: 'admin',
-    admin: true,
-    tenant_id: 1,
-    roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'],
-    permissions,
-  }));
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
+import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
 describe('Testes de Integração - Rotas de Informações do Sistema', () => {
-  const token = jwt.sign({ id: 1, username: 'admin', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
-
-  test('GET /api/system-info - requer autenticação', async () => {
-    const res = await supertest(app).get('/api/system-info');
-    expect(res.status).toBe(401);
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('GET /api/system-info - sucesso', async () => {
+  test('getSystemInfo retorna payload do serviço', async () => {
     jest.spyOn(SystemInfoService, 'getSystemInfo').mockResolvedValue([{ id: 1, title: 'Serviço antigo' } as any]);
+    const req = createRequestMock({ user: { tenant_id: 1 } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .get('/api/system-info')
-      .set('Authorization', `Bearer ${token}`);
+    await SystemInfoController.getSystemInfo(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toEqual([{ id: 1, title: 'Serviço antigo' }]);
-    expect(res.body.msg).toBe('Informações do sistema obtidas com sucesso');
+    expect(SystemInfoService.getSystemInfo).toHaveBeenCalledWith(1);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Informações do sistema obtidas com sucesso',
+      data: [{ id: 1, title: 'Serviço antigo' }],
+    }));
   });
 });

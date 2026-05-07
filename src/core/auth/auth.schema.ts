@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+import { buildApiResponseSchema } from '../schemas/api-response.schema.js';
+import { sanitizedUserSchema } from '../profile/users/users.schema.js';
 
 extendZodWithOpenApi(z);
 
@@ -32,41 +34,65 @@ const onboardingSchema = z.object({
   description: z.string().max(1000).optional().nullable(),
 }).openapi('Onboarding');
 
-const authLoginResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.object({
-    token: z.string(),
-    refresh_token: z.string(),
-    user: z.object({
-      id: z.union([z.string(), z.number()]).optional(),
-      name: z.string().nullable().optional(),
-      username: z.string(),
-      email: z.string().nullable().optional(),
-      tenant_id: z.number().nullable().optional(),
-      admin: z.boolean().optional(),
-      roles: z.array(z.string()).optional(),
-    }).nullable().optional(),
+const publicAuthConfigDataSchema = z.object({
+  deployment_mode: z.string(),
+  tenant_count: z.number(),
+  registration_enabled: z.boolean(),
+  onboarding_enabled: z.boolean(),
+  local_instance_configured: z.boolean(),
+  keycloak: z.object({
+    realm: z.string(),
+    client_id: z.string(),
+    url: z.string(),
   }),
-}).openapi('AuthLoginResponse');
+}).openapi('PublicAuthConfigData');
 
-const authRefreshResponseSchema = z.object({
-  success: z.boolean(),
-  msg: z.string(),
-  data: z.object({
-    access_token: z.string(),
-    refresh_token: z.string(),
-    expires_in: z.number().optional(),
-    refresh_expires_in: z.number().optional(),
-    token_type: z.string().optional(),
+const authSessionDataSchema = z.object({
+  token: z.string(),
+  refresh_token: z.string(),
+  expires_in: z.number().optional(),
+  refresh_expires_in: z.number().optional(),
+  token_type: z.string().optional(),
+  user: sanitizedUserSchema.nullable().optional(),
+}).openapi('AuthSessionData');
+
+const authRefreshDataSchema = z.object({
+  access_token: z.string(),
+  refresh_token: z.string(),
+  expires_in: z.number().optional(),
+  refresh_expires_in: z.number().optional(),
+  token_type: z.string().optional(),
+}).openapi('AuthRefreshData');
+
+const authAuthorizeResponseSchema = buildApiResponseSchema(
+  z.object({
+    authorization_url: z.string().url(),
   }),
-}).openapi('AuthRefreshResponse');
+  'AuthAuthorizeResponse',
+);
+
+const authConfigResponseSchema = buildApiResponseSchema(publicAuthConfigDataSchema, 'AuthConfigResponse');
+const authLoginResponseSchema = buildApiResponseSchema(authSessionDataSchema, 'AuthLoginResponse');
+const authCallbackResponseSchema = buildApiResponseSchema(authSessionDataSchema, 'AuthCallbackResponse');
+const authRefreshResponseSchema = buildApiResponseSchema(authRefreshDataSchema, 'AuthRefreshResponse');
+const authMeResponseSchema = buildApiResponseSchema(z.object({
+  user: sanitizedUserSchema.nullable(),
+  permissions: z.array(z.string()),
+  access: z.any().optional(),
+}), 'AuthMeResponse');
+const authOnboardingResponseSchema = buildApiResponseSchema(sanitizedUserSchema.nullable(), 'AuthOnboardingResponse');
 
 export {
+  authAuthorizeResponseSchema,
   authLoginSchema,
+  authCallbackResponseSchema,
   authRefreshSchema,
   authAuthorizeSchema,
   authCallbackSchema,
+  authConfigResponseSchema,
+  authMeResponseSchema,
+  authOnboardingResponseSchema,
+  authSessionDataSchema,
   onboardingSchema,
   authLoginResponseSchema,
   authRefreshResponseSchema,

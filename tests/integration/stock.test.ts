@@ -1,105 +1,59 @@
-import supertest from 'supertest';
-import { app } from '../../src/core/app';
-import connection from '../../src/core/database/connection.js';
-import jwt from 'jsonwebtoken';
-import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
-
-const permissions = [
-  'dashboard.access',
-  'operational.services.access',
-  'operational.status.access',
-  'operational.types-products.access',
-  'inventory.stock.access',
-  'organization.users.access',
-  'organization.tenants.access',
-  'notifications.system-info.access',
-];
-
-beforeAll(() => {
-  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async (token) => {
-    return { id: 1, username: 'admin', admin: true, tenant_id: 1, roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'], permissions };
-  });
-});
-
-beforeAll(() => {
-  process.env.SECRET = 'testsecret';
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
-function mockConnectWithResponses(responder: (sql: string, params: any[]) => any) {
-  const query = jest.fn((sql: string, params: any[]) => {
-    return Promise.resolve(responder(sql, params));
-  });
-  const release = jest.fn();
-  (connection as any).connect = jest.fn().mockResolvedValue({ query, release });
-  return { query, release };
-}
+import StockController from '../../src/modules/inventory/stock/stock.controller.js';
+import StockService from '../../src/modules/inventory/stock/stock.service.js';
+import MessagingService from '../../src/core/utils/messaging.service.js';
+import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
 describe('Testes de Integração - Rotas de Estoque (Stock)', () => {
-  const token = jwt.sign({ id: 1, username: 'admin', admin: true, tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
-
-  test('GET /stocks - sucesso', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('SELECT') && sql.includes('FROM stocks')) return { rows: [{ id: 1, name: 'Peça A', quantity: 10 }], rowCount: 1 };
-      return { rows: [], rowCount: 0 };
-    });
-
-    const res = await supertest(app)
-      .get('/api/stock')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Estoque listado com sucesso");
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('POST /stocks - sucesso', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('INSERT INTO stocks')) return { rows: [{ id: 2, name: 'Peça B', quantity: 5 }], rowCount: 1 };
-      return { rows: [], rowCount: 0 };
-    });
+  test('getAll retorna itens do estoque', async () => {
+    jest.spyOn(StockService, 'getAll').mockResolvedValue([{ id: 1, name: 'Peça A' } as any]);
+    const req = createRequestMock({ user: { tenant_id: 1 } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .post('/api/stock')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Peça B', code: 'PB001', quantity: 5, purchasePrice: 10, salePrice: 20 });
+    await StockController.getAll(req, res);
 
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Item de estoque criado com sucesso");
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Estoque listado com sucesso',
+      data: [{ id: 1, name: 'Peça A' }],
+    }));
   });
 
-  test('PUT /stocks/:id - sucesso', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('UPDATE stocks')) return { rows: [{ id: 1, name: 'Peça A', quantity: 15 }], rowCount: 1 };
-      return { rows: [], rowCount: 0 };
-    });
+  test('create cria item de estoque', async () => {
+    jest.spyOn(StockService, 'create').mockResolvedValue({ id: 2, name: 'Peça B' } as any);
+    const req = createRequestMock({ user: { tenant_id: 1 }, body: { name: 'Peça B', code: 'PB', quantity: 5 } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .put('/api/stock/1')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Peça A', code: 'PA001', quantity: 15, purchasePrice: 12, salePrice: 22 });
+    await StockController.create(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Item de estoque atualizado com sucesso");
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Item de estoque criado com sucesso',
+      data: { id: 2, name: 'Peça B' },
+    }));
   });
 
-  test('DELETE /stocks/:id - sucesso', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('DELETE FROM stocks')) return { rows: [{ id: 1, name: 'Peça A' }], rowCount: 1 };
-      return { rows: [], rowCount: 0 };
-    });
+  test('update dispara alerta de estoque baixo quando quantity <= 5', async () => {
+    jest.spyOn(StockService, 'update').mockResolvedValue({ id: 1, quantity: 3 } as any);
+    const notifySpy = jest.spyOn(MessagingService, 'notifyTenant').mockImplementation(() => undefined);
+    const req = createRequestMock({ user: { tenant_id: 1 }, params: { id: '1' }, body: { quantity: 3 } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .delete('/api/stock/1')
-      .set('Authorization', `Bearer ${token}`);
+    await StockController.update(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe("Item de estoque removido com sucesso");
+    expect(notifySpy).toHaveBeenCalledWith(1, '@stock/low_stock_alert', { id: 1, quantity: 3 });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Item de estoque atualizado com sucesso' }));
+  });
+
+  test('remove retorna item removido', async () => {
+    jest.spyOn(StockService, 'remove').mockResolvedValue({ id: 1 } as any);
+    const req = createRequestMock({ user: { tenant_id: 1 }, params: { id: '1' } });
+    const res = createResponseMock();
+
+    await StockController.remove(req, res);
+
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ msg: 'Item de estoque removido com sucesso' }));
   });
 });

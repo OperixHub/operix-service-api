@@ -37,9 +37,15 @@ function getKey(header: any, callback: jwt.SigningKeyCallback) {
   });
 }
 
+const validIssuers = [
+  env.keycloakIssuer,
+  `${env.keycloakPublicUrl}/realms/${env.keycloakRealm}`,
+  `${env.keycloakUrl}/realms/${env.keycloakRealm}`
+];
+
 const jwtVerifyOptions = {
   algorithms: ['RS256'] as jwt.Algorithm[],
-  issuer: env.keycloakIssuer,
+  issuer: Array.from(new Set(validIssuers)) as [string, ...string[]],
 };
 
 async function resolveTenantId(decoded: any, user?: { tenant_id?: number | null }) {
@@ -116,11 +122,22 @@ async function provisionUser(decoded: any): Promise<any> {
 }
 
 export default class AuthMiddleware {
+  private static normalizeAuthErrorMessage(error: unknown) {
+    const rawMessage = error instanceof Error ? error.message : String(error || '');
+    const normalized = rawMessage.toLowerCase();
+
+    if (normalized.includes('jwt expired') || normalized.includes('token expired')) {
+      return 'Token expirado';
+    }
+
+    return rawMessage || 'Falha na autenticação';
+  }
+
   static async verifyRawToken(token: string): Promise<any> {
     return new Promise((resolve, reject) => {
       jwt.verify(token, getKey, jwtVerifyOptions, async (err: any, decoded: any) => {
-        if (err) {
-          return reject(new Error(`Token inválido: ${err.message}`));
+        if (err || err !== null) {
+          return reject(new Error(`Token inválido: ${err?.message || err}`));
         }
 
         try {
@@ -155,7 +172,7 @@ export default class AuthMiddleware {
       (req as any).user = await AuthMiddleware.verifyRawToken(token);
       next();
     } catch (error: any) {
-      return ResponseHandler.error(res, error.message || 'Falha na autenticação', 401);
+      return ResponseHandler.error(res, AuthMiddleware.normalizeAuthErrorMessage(error), 401);
     }
   }
 }

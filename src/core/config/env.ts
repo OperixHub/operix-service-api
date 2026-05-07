@@ -29,6 +29,10 @@ export const env = {
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   databaseUrl: process.env.DATABASE_URL || 'postgresql://admin:admin@localhost:5432/operix-service',
   keycloakUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
+  // Public URL used to build browser-facing authorization URLs (e.g. OAuth redirect).
+  // In Docker environments KEYCLOAK_URL is an internal hostname (keycloak:8080);
+  // set KEYCLOAK_PUBLIC_URL to the host-accessible address (e.g. http://localhost:8080).
+  keycloakPublicUrl: process.env.KEYCLOAK_PUBLIC_URL || process.env.KEYCLOAK_URL || 'http://localhost:8080',
   keycloakRealm: process.env.KEYCLOAK_REALM || 'operix-service',
   keycloakClientId: process.env.KEYCLOAK_CLIENT_ID || 'operix-service-app',
   keycloakAdminUser: process.env.KEYCLOAK_ADMIN_USER || 'admin',

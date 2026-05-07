@@ -3,10 +3,55 @@ import KeycloakAdminService from '../../src/core/auth/keycloak-admin.service.js'
 import TenantRepository from '../../src/core/profile/tenants/tenants.repository.js';
 import UsersRepository from '../../src/core/profile/users/users.repository.js';
 import TenantPolicyService from '../../src/core/profile/tenants/tenant-policy.service.js';
+import { sanitizeUser } from '../../src/core/utils/sanitize.js';
 
 describe('AuthService', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+  });
+
+  test('buildSessionPayload preserva sub e keycloak_id no usuário autenticado', () => {
+    const result = AuthService.buildSessionPayload({
+      access_token: 'access-token',
+      refresh_token: 'refresh-token',
+      expires_in: 300,
+      refresh_expires_in: 1800,
+      token_type: 'Bearer',
+    }, {
+      id: 22,
+      sub: 'kc-google',
+      keycloak_id: 'kc-google',
+      name: 'Google User',
+      username: 'google.user',
+      email: 'google@operix.dev',
+      tenant_id: 11,
+      admin: true,
+      root: true,
+      roles: ['module:organization'],
+    });
+
+    expect(result.user).toEqual(expect.objectContaining({
+      id: 22,
+      sub: 'kc-google',
+      keycloak_id: 'kc-google',
+      username: 'google.user',
+      email: 'google@operix.dev',
+    }));
+  });
+
+  test('sanitizeUser usa keycloak_id como fallback para sub', () => {
+    const result = sanitizeUser({
+      id: 22,
+      keycloak_id: 'kc-google',
+      username: 'google.user',
+    });
+
+    expect(result).toEqual(expect.objectContaining({
+      id: 22,
+      sub: 'kc-google',
+      keycloak_id: 'kc-google',
+      username: 'google.user',
+    }));
   });
 
   test('completeOnboarding cria tenant e vincula usuário autenticado como admin', async () => {

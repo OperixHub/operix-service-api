@@ -23,6 +23,14 @@ const userPublicSchema = userSchema.omit({
   password: true,
 }).openapi('UserPublic');
 
+const sanitizedUserSchema = userPublicSchema.extend({
+  sub: z.string().nullable().optional(),
+  onboarding_required: z.boolean().optional(),
+  roles: z.array(z.string()).optional(),
+  createdAt: z.union([z.string(), z.date()]).nullable().optional(),
+  updatedAt: z.union([z.string(), z.date()]).nullable().optional(),
+}).openapi('SanitizedUser');
+
 const userCreateSchema = z.object({
   name: z.string().min(1, 'Campo "Nome" é obrigatório.'),
   username: z.string().min(1, 'Campo "Nome de Usuário" é obrigatório.'),
@@ -43,4 +51,12 @@ const userAccessUpdateSchema = z.object({
 const userListResponseSchema = buildApiListResponseSchema(userPublicSchema, 'UserListResponse');
 const userResponseSchema = buildApiResponseSchema(userPublicSchema, 'UserResponse');
 
-export { userAccessUpdateSchema, userCreateSchema, userPublicSchema, userResponseSchema, userSchema, userListResponseSchema };
+export {
+  sanitizedUserSchema,
+  userAccessUpdateSchema,
+  userCreateSchema,
+  userPublicSchema,
+  userResponseSchema,
+  userSchema,
+  userListResponseSchema,
+};

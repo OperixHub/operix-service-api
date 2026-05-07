@@ -3,6 +3,7 @@ import type { Response } from 'express';
 export interface ApiResponse<T = unknown> {
   success: boolean;
   msg: string;
+  message: string;
   data: T | null;
 }
 
@@ -12,12 +13,12 @@ export default class ResponseHandler {
       return res.status(204).end();
     }
 
-    const response: ApiResponse<T> = { success: true, msg, data };
+    const response: ApiResponse<T> = { success: true, msg, message: msg, data };
     return res.status(status).json(response);
   }
 
   static error(res: Response, msg: string = 'Ocorreu um erro na operação', status: number = 500, data: unknown = null) {
-    const response: ApiResponse = { success: false, msg, data: data as any };
+    const response: ApiResponse = { success: false, msg, message: msg, data: data as any };
     return res.status(status).json(response);
   }
 }

@@ -4,6 +4,7 @@ function buildApiResponseSchema<T extends z.ZodTypeAny>(dataSchema: T, openApiNa
   return z.object({
     success: z.boolean(),
     msg: z.string(),
+    message: z.string(),
     data: dataSchema,
   }).openapi(openApiName);
 }
@@ -12,6 +13,7 @@ function buildApiListResponseSchema<T extends z.ZodTypeAny>(itemSchema: T, openA
   return z.object({
     success: z.boolean(),
     msg: z.string(),
+    message: z.string(),
     data: z.array(itemSchema),
   }).openapi(openApiName);
 }

@@ -1,116 +1,87 @@
-import supertest from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../../src/core/app';
-import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
-import PermissionsRepository from '../../src/core/profile/permissions/permissions.repository.js';
-import UsersRepository from '../../src/core/profile/users/users.repository.js';
-import KeycloakAdminService from '../../src/core/auth/keycloak-admin.service.js';
-
-const permissions = [
-  'dashboard.access',
-  'operational.services.access',
-  'operational.status.access',
-  'operational.types-products.access',
-  'inventory.stock.access',
-  'organization.users.access',
-  'organization.tenants.access',
-  'notifications.system-info.access',
-];
-
-beforeAll(() => {
-  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async () => ({
-    id: 1,
-    name: 'Admin',
-    username: 'admin',
-    email: 'admin@operix.dev',
-    admin: true,
-    tenant_id: 1,
-    roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'],
-    permissions,
-  }));
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
+import PermissionsController from '../../src/core/profile/permissions/permissions.controller.js';
+import PermissionsService from '../../src/core/profile/permissions/permissions.service.js';
+import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
 describe('Testes de Integração - Permissões', () => {
-  const token = jwt.sign({ id: 1, username: 'admin', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
-
-  test('GET /api/permissions/me - retorna permissões efetivas', async () => {
-    jest.spyOn(PermissionsRepository, 'getOverridesByUserId').mockResolvedValue([]);
-
-    const res = await supertest(app)
-      .get('/api/permissions/me')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.effective_permissions).toContain('organization.users.access');
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('GET /api/permissions/catalog - retorna catálogo agrupado', async () => {
-    const res = await supertest(app)
-      .get('/api/permissions/catalog')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.modules.some((module: any) => module.key === 'organization')).toBe(true);
-  });
-
-  test('GET /api/permissions/users/:id - retorna overrides e permissões do usuário', async () => {
-    jest.spyOn(UsersRepository, 'findByIdAndTenantId').mockResolvedValue({
-      id: 2,
-      name: 'Maria',
-      username: 'maria',
-      email: 'maria@operix.dev',
-      tenant_id: 1,
-      keycloak_id: 'kc-2',
-      admin: false,
-      root: false,
+  test('getMe retorna permissões efetivas do usuário autenticado', async () => {
+    jest.spyOn(PermissionsService, 'getCurrentUserPermissions').mockResolvedValue({
+      effective_permissions: ['organization.users.access'],
+      permissions: [],
+      access: { plan: 'trial' },
     } as any);
-    jest.spyOn(PermissionsRepository, 'getOverridesByUserId').mockResolvedValue([
-      { permission_key: 'inventory.stock.access', effect: 'deny' },
-    ] as any);
-    jest.spyOn(KeycloakAdminService, 'getUserRealmRoleNames').mockResolvedValue(['module:inventory']);
+    const req = createRequestMock({ user: { id: 1, roles: ['module:organization'] } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .get('/api/permissions/users/2')
-      .set('Authorization', `Bearer ${token}`);
+    await PermissionsController.getMe(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.overrides).toEqual([{ permission_key: 'inventory.stock.access', effect: 'deny' }]);
-    expect(res.body.data.effective_permissions).not.toContain('inventory.stock.access');
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Permissões do usuário autenticado obtidas com sucesso',
+      data: expect.objectContaining({
+        effective_permissions: ['organization.users.access'],
+        roles: ['module:organization'],
+      }),
+    }));
   });
 
-  test('PUT /api/permissions/users/:id - substitui overrides', async () => {
-    jest.spyOn(UsersRepository, 'findByIdAndTenantId').mockResolvedValue({
-      id: 2,
-      name: 'Maria',
-      username: 'maria',
-      email: 'maria@operix.dev',
-      tenant_id: 1,
-      keycloak_id: 'kc-2',
-      admin: false,
-      root: false,
+  test('getCatalog retorna catálogo agrupado', async () => {
+    jest.spyOn(PermissionsService, 'getCatalog').mockReturnValue({ modules: [{ key: 'organization' }], permissions: [], plans: [] } as any);
+    const req = createRequestMock();
+    const res = createResponseMock();
+
+    await PermissionsController.getCatalog(req, res);
+
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Catálogo de permissões obtido com sucesso',
+      data: expect.objectContaining({ modules: [{ key: 'organization' }] }),
+    }));
+  });
+
+  test('getUser retorna snapshot de permissões do usuário', async () => {
+    jest.spyOn(PermissionsService, 'getUserPermissionsForManagement').mockResolvedValue({
+      user: { id: 2 },
+      overrides: [{ permission_key: 'inventory.stock.access', effect: 'deny' }],
+      effective_permissions: [],
+      permissions: [],
+      access: {},
+      roles: ['module:inventory'],
+      module_roles: ['module:inventory'],
     } as any);
-    jest.spyOn(PermissionsRepository, 'replaceOverrides').mockResolvedValue([] as never);
-    jest.spyOn(PermissionsRepository, 'getOverridesByUserId').mockResolvedValue([
-      { permission_key: 'inventory.stock.access', effect: 'allow' },
-    ] as any);
-    jest.spyOn(KeycloakAdminService, 'getUserRealmRoleNames').mockResolvedValue([]);
+    const req = createRequestMock({ user: { tenant_id: 1 }, params: { id: '2' } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .put('/api/permissions/users/2')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        overrides: [{ permission_key: 'inventory.stock.access', effect: 'allow' }],
-      });
+    await PermissionsController.getUser(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data.effective_permissions).toContain('inventory.stock.access');
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Permissões do usuário obtidas com sucesso',
+      data: expect.objectContaining({
+        overrides: [{ permission_key: 'inventory.stock.access', effect: 'deny' }],
+      }),
+    }));
+  });
+
+  test('replaceUserOverrides substitui overrides', async () => {
+    jest.spyOn(PermissionsService, 'replaceUserOverrides').mockResolvedValue({
+      overrides: [{ permission_key: 'inventory.stock.access', effect: 'allow' }],
+      effective_permissions: ['inventory.stock.access'],
+    } as any);
+    const req = createRequestMock({
+      user: { tenant_id: 1 },
+      params: { id: '2' },
+      body: { overrides: [{ permission_key: 'inventory.stock.access', effect: 'allow' }] },
+    });
+    const res = createResponseMock();
+
+    await PermissionsController.replaceUserOverrides(req, res);
+
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Permissões do usuário atualizadas com sucesso',
+      data: expect.objectContaining({
+        effective_permissions: ['inventory.stock.access'],
+      }),
+    }));
   });
 });

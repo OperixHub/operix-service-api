@@ -43,6 +43,7 @@ export default class AuthService {
       token_type: tokenData.token_type,
       user: sanitizeUser({
         id: user?.id || user?.sub,
+        sub: user?.sub || user?.keycloak_id,
         name: user?.name || user?.username || user?.preferred_username,
         username: user?.username || user?.preferred_username,
         email: user?.email || null,
@@ -106,8 +107,8 @@ export default class AuthService {
         tenant = await TenantRepository.create(TenantModel.fromRequest({
           name: tenantName,
           keycloak_group_id: groupId,
-          cnpj: data.cnpj,
-          description: data.description,
+          cnpj: data.cnpj?.trim(),
+          description: data.description?.trim(),
         }));
 
         await KeycloakAdminService.addUserToGroup(authenticatedUser.sub, groupId, adminToken);

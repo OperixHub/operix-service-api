@@ -74,7 +74,10 @@ export default class KeycloakAdminService {
     codeChallenge: string;
     identityProvider?: string;
   }) {
-    const url = new URL(`${this.realmBaseUrl}/protocol/openid-connect/auth`);
+    // Use the public URL so the browser can resolve it (internal Docker hostnames like
+    // "keycloak:8080" are not reachable from outside the container network).
+    const publicRealmBase = `${env.keycloakPublicUrl}/realms/${env.keycloakRealm}`;
+    const url = new URL(`${publicRealmBase}/protocol/openid-connect/auth`);
     url.searchParams.set('client_id', env.keycloakClientId);
     url.searchParams.set('redirect_uri', params.redirectUri);
     url.searchParams.set('response_type', 'code');

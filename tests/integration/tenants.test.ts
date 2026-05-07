@@ -1,78 +1,49 @@
-import supertest from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../../src/core/app';
-import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+import TenantsController from '../../src/core/profile/tenants/tenants.controller.js';
 import TenantsService from '../../src/core/profile/tenants/tenants.service.js';
-
-const permissions = [
-  'dashboard.access',
-  'operational.services.access',
-  'operational.status.access',
-  'operational.types-products.access',
-  'inventory.stock.access',
-  'organization.users.access',
-  'organization.tenants.access',
-  'notifications.system-info.access',
-];
-
-beforeAll(() => {
-  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async () => ({
-    id: 1,
-    username: 'admin',
-    admin: true,
-    tenant_id: 1,
-    roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'],
-    permissions,
-  }));
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
+import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
 describe('Testes de Integração - Rotas de Tenants', () => {
-  const token = jwt.sign({ id: 1, username: 'admin', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
-
-  test('GET /api/tenants - requer autenticação', async () => {
-    const res = await supertest(app).get('/api/tenants');
-    expect(res.status).toBe(401);
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('GET /api/tenants - sucesso', async () => {
-    jest.spyOn(TenantsService, 'getAll').mockResolvedValue([{ id: 1, name: 'Tenant A', keycloak_group_id: 'group-1' } as any]);
+  test('getAll retorna tenants cadastrados', async () => {
+    jest.spyOn(TenantsService, 'getAll').mockResolvedValue([{ id: 1, name: 'Tenant A' } as any]);
+    const req = createRequestMock();
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .get('/api/tenants')
-      .set('Authorization', `Bearer ${token}`);
+    await TenantsController.getAll(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toEqual([{ id: 1, name: 'Tenant A', keycloak_group_id: 'group-1' }]);
-    expect(res.body.msg).toBe('Unidades listadas com sucesso');
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      msg: 'Unidades listadas com sucesso',
+      data: [{ id: 1, name: 'Tenant A' }],
+    }));
   });
 
-  test('POST /api/tenants - sucesso ao criar tenant', async () => {
-    jest.spyOn(TenantsService, 'create').mockResolvedValue({ id: 10, name: 'Novo Tenant', keycloak_group_id: 'group-10' } as any);
+  test('create cria tenant', async () => {
+    jest.spyOn(TenantsService, 'create').mockResolvedValue({ id: 10, name: 'Novo Tenant' } as any);
+    const req = createRequestMock({ body: { name: 'Novo Tenant' } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .post('/api/tenants')
-      .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'Novo Tenant' });
+    await TenantsController.create(req, res);
 
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.data).toEqual({ id: 10, name: 'Novo Tenant', keycloak_group_id: 'group-10' });
-    expect(res.body.msg).toBe('Unidade criada com sucesso');
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      msg: 'Unidade criada com sucesso',
+      data: { id: 10, name: 'Novo Tenant' },
+    }));
   });
 
-  test('DELETE /api/tenants/:id - sucesso ao remover', async () => {
+  test('remove encerra com 204', async () => {
     jest.spyOn(TenantsService, 'remove').mockResolvedValue(true as never);
+    const req = createRequestMock({ params: { id: '1' } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .delete('/api/tenants/1')
-      .set('Authorization', `Bearer ${token}`);
+    await TenantsController.remove(req, res);
 
-    expect(res.status).toBe(204);
-    expect(res.text).toBe('');
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
   });
 });

@@ -64,10 +64,12 @@ export default class AuthController {
         refresh_token: (data as any).refresh_token,
         user: {
           id: localUser?.id || decoded?.sub,
+          sub: decoded?.sub || localUser?.keycloak_id || null,
           name: localUser?.name || decoded?.name || decoded?.preferred_username || username,
           username: decoded?.preferred_username || username,
           email: decoded?.email || localUser?.email || null,
           tenant_id: localUser?.tenant_id ?? (decoded?.tenant_id ? Number(decoded.tenant_id) : null),
+          keycloak_id: localUser?.keycloak_id || decoded?.sub || null,
           admin: Boolean(localUser?.admin || roles.includes('admin') || roles.includes('ADMIN')),
           roles,
         },

@@ -1,4 +1,11 @@
+import { buildApiResponseSchema } from '../schemas/api-response.schema.js';
 import { z } from '../schemas/zod-openapi.js';
+import {
+  permissionDecisionSchema,
+  permissionsCatalogDataSchema,
+} from './permissions/permissions.schema.js';
+import { tenantSchema } from './tenants/tenants.schema.js';
+import { sanitizedUserSchema } from './users/users.schema.js';
 
 const userProfileUpdateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -15,4 +22,19 @@ const companySettingsUpdateSchema = z.object({
   enabled_modules: z.array(z.string()).optional(),
 }).openapi('CompanySettingsUpdate');
 
-export { companySettingsUpdateSchema, userProfileUpdateSchema };
+const profileMeResponseSchema = buildApiResponseSchema(sanitizedUserSchema, 'ProfileMeResponse');
+const companySettingsResponseSchema = buildApiResponseSchema(tenantSchema.nullable(), 'CompanySettingsResponse');
+const profileSystemResponseSchema = buildApiResponseSchema(z.object({
+  access: z.any().optional(),
+  effective_permissions: z.array(z.string()),
+  permissions: z.array(permissionDecisionSchema),
+  catalog: permissionsCatalogDataSchema,
+}), 'ProfileSystemResponse');
+
+export {
+  companySettingsResponseSchema,
+  companySettingsUpdateSchema,
+  profileMeResponseSchema,
+  profileSystemResponseSchema,
+  userProfileUpdateSchema,
+};

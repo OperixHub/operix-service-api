@@ -55,47 +55,56 @@ const permissionOverridesUpdateSchema = z.object({
   }),
 }).openapi('PermissionOverridesUpdate');
 
+const permissionsCatalogDataSchema = z.object({
+  modules: z.array(permissionModuleSchema),
+  permissions: z.array(permissionCatalogItemSchema),
+  plans: z.array(z.any()),
+}).openapi('PermissionsCatalogData');
+
+const permissionsMeDataSchema = z.object({
+  roles: z.array(z.string()),
+  effective_permissions: z.array(z.string()),
+  permissions: z.array(permissionDecisionSchema),
+  access: z.any().optional(),
+}).openapi('PermissionsMeData');
+
+const permissionsUserDataSchema = z.object({
+  user: userPublicSchema,
+  roles: z.array(z.string()),
+  module_roles: z.array(z.string()),
+  overrides: z.array(permissionOverrideSchema),
+  effective_permissions: z.array(z.string()),
+  permissions: z.array(permissionDecisionSchema),
+  access: z.any().optional(),
+}).openapi('PermissionsUserData');
+
 const permissionsCatalogResponseSchema = buildApiResponseSchema(
-  z.object({
-    modules: z.array(permissionModuleSchema),
-    permissions: z.array(permissionCatalogItemSchema),
-    plans: z.array(z.any()),
-  }),
+  permissionsCatalogDataSchema,
   'PermissionsCatalogResponse',
 );
 
 const permissionsMeResponseSchema = buildApiResponseSchema(
-  z.object({
-    roles: z.array(z.string()),
-    effective_permissions: z.array(z.string()),
-    permissions: z.array(permissionDecisionSchema),
-    access: z.any().optional(),
-  }),
+  permissionsMeDataSchema,
   'PermissionsMeResponse',
 );
 
 const permissionsUserResponseSchema = buildApiResponseSchema(
-  z.object({
-    user: userPublicSchema,
-    roles: z.array(z.string()),
-    module_roles: z.array(z.string()),
-    overrides: z.array(permissionOverrideSchema),
-    effective_permissions: z.array(z.string()),
-    permissions: z.array(permissionDecisionSchema),
-    access: z.any().optional(),
-  }),
+  permissionsUserDataSchema,
   'PermissionsUserResponse',
 );
 
 export {
   manageableModuleKeySchema,
   permissionCatalogItemSchema,
+  permissionsCatalogDataSchema,
   permissionDecisionSchema,
   permissionEffectSchema,
   permissionModuleSchema,
+  permissionsMeDataSchema,
   permissionOverrideSchema,
   permissionOverridesUpdateSchema,
   permissionsCatalogResponseSchema,
   permissionsMeResponseSchema,
+  permissionsUserDataSchema,
   permissionsUserResponseSchema,
 };

@@ -18,6 +18,7 @@ describe('ResponseHandler', () => {
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       msg: 'ok',
+      message: 'ok',
       data: { id: 1 },
     });
   });
@@ -30,5 +31,19 @@ describe('ResponseHandler', () => {
     expect(res.status).toHaveBeenCalledWith(204);
     expect(res.end).toHaveBeenCalled();
     expect(res.json).not.toHaveBeenCalled();
+  });
+
+  test('error retorna aliases compatíveis para mensagem', () => {
+    const res = createResponseMock();
+
+    ResponseHandler.error(res, 'Token expirado', 401);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      msg: 'Token expirado',
+      message: 'Token expirado',
+      data: null,
+    });
   });
 });

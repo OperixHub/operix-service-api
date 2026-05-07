@@ -1,5 +1,6 @@
 type UserLike = {
   id?: number | string | null;
+  sub?: string | null;
   name?: string | null;
   username?: string | null;
   email?: string | null;
@@ -25,6 +26,7 @@ export function sanitizeUser(user: UserLike | null | undefined) {
 
   return {
     id: user.id ?? null,
+    sub: user.sub ?? user.keycloak_id ?? null,
     name: user.name ?? null,
     username: user.username ?? null,
     email: user.email ?? null,

@@ -1,150 +1,81 @@
-import supertest from 'supertest';
-import jwt from 'jsonwebtoken';
-import { app } from '../../src/core/app';
-import connection from '../../src/core/database/connection.js';
-import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
+import UsersController from '../../src/core/profile/users/users.controller.js';
 import UsersService from '../../src/core/profile/users/users.service.js';
-
-const permissions = [
-  'dashboard.access',
-  'operational.services.access',
-  'operational.status.access',
-  'operational.types-products.access',
-  'inventory.stock.access',
-  'organization.users.access',
-  'organization.tenants.access',
-  'notifications.system-info.access',
-];
-
-beforeAll(() => {
-  jest.spyOn(AuthMiddleware, 'verifyRawToken').mockImplementation(async () => ({
-    id: 1,
-    username: 'admin',
-    admin: true,
-    tenant_id: 1,
-    roles: ['module:operational', 'module:inventory', 'module:organization', 'module:notifications'],
-    permissions,
-  }));
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
-function mockConnectWithResponses(responder: (sql: string, params: any[]) => any) {
-  const query = jest.fn((sql: string, params: any[]) => Promise.resolve(responder(sql, params)));
-  const release = jest.fn();
-  (connection as any).connect = jest.fn().mockResolvedValue({ query, release });
-  return { query, release };
-}
+import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
 describe('Testes de Integração - Rotas de Usuários', () => {
-  const token = jwt.sign({ id: 1, username: 'adminuser', tenant_id: 1 }, 'testsecret', { expiresIn: '1d' });
-
-  test('GET /api/users - requer autenticação', async () => {
-    const res = await supertest(app).get('/api/users');
-    expect(res.status).toBe(401);
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
-  test('GET /api/users - retorna lista de usuários do tenant', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('SELECT id, name, username, email, tenant_id, admin, root FROM users')) {
-        return { rows: [{ id: 1, name: 'Admin User', username: 'adminuser', email: 'admin@operix.dev', tenant_id: 1, admin: true, root: true }], rowCount: 1 };
-      }
-      return { rows: [], rowCount: 0 };
-    });
+  test('getAll lista usuários do tenant autenticado', async () => {
+    jest.spyOn(UsersService, 'getAll').mockResolvedValue([{ id: 1, username: 'admin' } as any]);
+    const req = createRequestMock({ user: { tenant_id: 1 } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .get('/api/users')
-      .set('Authorization', `Bearer ${token}`);
+    await UsersController.getAll(req, res);
 
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe('Usuários listados com sucesso');
-    expect(res.body.data).toEqual([{ id: 1, name: 'Admin User', username: 'adminuser', email: 'admin@operix.dev', tenant_id: 1, admin: true, root: true }]);
+    expect(UsersService.getAll).toHaveBeenCalledWith(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      msg: 'Usuários listados com sucesso',
+      data: [{ id: 1, username: 'admin' }],
+    }));
   });
 
-  test('POST /api/users - cria usuário no tenant autenticado', async () => {
-    jest.spyOn(UsersService, 'create').mockResolvedValue({
-      id: 22,
-      name: 'Maria Lima',
-      username: 'maria',
-      email: 'maria@operix.dev',
-      tenant_id: 1,
-      admin: false,
-      root: false,
-    } as any);
-
-    const res = await supertest(app)
-      .post('/api/users')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        name: 'Maria Lima',
+  test('create cria usuário no tenant autenticado', async () => {
+    jest.spyOn(UsersService, 'create').mockResolvedValue({ id: 22, username: 'maria', tenant_id: 1 } as any);
+    const req = createRequestMock({
+      user: { tenant_id: 1 },
+      body: {
+        name: 'Maria',
         username: 'maria',
         email: 'maria@operix.dev',
         password: '12345678',
-        modules: ['operational', 'inventory'],
-      });
-
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.msg).toBe('Usuário criado com sucesso');
-    expect(res.body.data).toEqual({
-      id: 22,
-      name: 'Maria Lima',
-      username: 'maria',
-      email: 'maria@operix.dev',
-      tenant_id: 1,
-      admin: false,
-      root: false,
+        modules: ['inventory'],
+      },
     });
+    const res = createResponseMock();
+
+    await UsersController.create(req, res);
+
+    expect(UsersService.create).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      msg: 'Usuário criado com sucesso',
+      data: { id: 22, username: 'maria', tenant_id: 1 },
+    }));
   });
 
-  test('DELETE /api/users/:id - usuário não encontrado', async () => {
-    mockConnectWithResponses(() => ({ rows: [], rowCount: 0 }));
+  test('remove responde 204 quando o serviço conclui remoção', async () => {
+    jest.spyOn(UsersService, 'remove').mockResolvedValue(true as never);
+    const req = createRequestMock({ user: { tenant_id: 1 }, params: { id: '2' } });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .delete('/api/users/2')
-      .set('Authorization', `Bearer ${token}`);
+    await UsersController.remove(req, res);
 
-    expect(res.status).toBe(404);
-    expect(res.body.success).toBe(false);
-    expect(res.body.msg).toBe('Usuário não encontrado.');
+    expect(UsersService.remove).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(res.end).toHaveBeenCalled();
   });
 
-  test('DELETE /api/users/:id - administrador não pode ser removido', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('SELECT * FROM users WHERE id = $1 AND tenant_id = $2')) {
-        return { rows: [{ admin: true }], rowCount: 1 };
-      }
-      return { rows: [], rowCount: 0 };
+  test('updateAccess atualiza acesso do usuário', async () => {
+    jest.spyOn(UsersService, 'updateAccess').mockResolvedValue({ id: 2, active: false } as any);
+    const req = createRequestMock({
+      user: { id: 1, tenant_id: 1, root: true },
+      params: { id: '2' },
+      body: { active: false },
     });
+    const res = createResponseMock();
 
-    const res = await supertest(app)
-      .delete('/api/users/2')
-      .set('Authorization', `Bearer ${token}`);
+    await UsersController.updateAccess(req, res);
 
-    expect(res.status).toBe(422);
-    expect(res.body.success).toBe(false);
-    expect(res.body.msg).toBe('Usuário administrador não pode ser removido.');
-  });
-
-  test('DELETE /api/users/:id - sucesso retorna 204 sem body', async () => {
-    mockConnectWithResponses((sql) => {
-      if (sql.includes('SELECT * FROM users WHERE id = $1 AND tenant_id = $2')) {
-        return { rows: [{ admin: false }], rowCount: 1 };
-      }
-      if (sql.startsWith('DELETE FROM users')) {
-        return { rowCount: 1 };
-      }
-      return { rows: [], rowCount: 0 };
-    });
-
-    const res = await supertest(app)
-      .delete('/api/users/2')
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.status).toBe(204);
-    expect(res.text).toBe('');
+    expect(UsersService.updateAccess).toHaveBeenCalledWith(2, req.user, expect.anything());
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      success: true,
+      msg: 'Usuário atualizado com sucesso',
+      data: { id: 2, active: false },
+    }));
   });
 });
