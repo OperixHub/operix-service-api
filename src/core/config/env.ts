@@ -32,6 +32,8 @@ export const env = {
   // Public URL used to build browser-facing authorization URLs (e.g. OAuth redirect).
   // In Docker environments KEYCLOAK_URL is an internal hostname (keycloak:8080);
   // set KEYCLOAK_PUBLIC_URL to the host-accessible address (e.g. http://localhost:8080).
+  keycloakClientAdminId: process.env.KEYCLOAK_CLIENT_ADMIN_ID || '',
+  keycloakClientAdminSecret: process.env.KEYCLOAK_CLIENT_ADMIN_SECRET || '',
   keycloakPublicUrl: process.env.KEYCLOAK_PUBLIC_URL || process.env.KEYCLOAK_URL || 'http://localhost:8080',
   keycloakRealm: process.env.KEYCLOAK_REALM || 'operix-service',
   keycloakClientId: process.env.KEYCLOAK_CLIENT_ID || 'operix-service-app',

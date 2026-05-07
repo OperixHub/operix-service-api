@@ -161,7 +161,6 @@ export default class AuthMiddleware {
   }
 
   static async authToken(req: Request, res: Response, next: NextFunction) {
-    console.log('Middleware', req)
     const authHeader = req.headers.authorization;
     const token = authHeader?.split(' ')[1];
 

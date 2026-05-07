@@ -39,8 +39,8 @@ export default class AuthController {
         req.body.redirect_uri,
         req.body.code_verifier,
       );
-      const user = await AuthMiddleware.verifyRawToken(tokenData.access_token);
 
+      const user = await AuthMiddleware.verifyRawToken(tokenData.id_token);
       return ResponseHandler.success(res, AuthService.buildSessionPayload(tokenData, user), 'Login realizado com sucesso.');
     } catch (error: any) {
       return ResponseHandler.error(res, error.message || 'Erro ao finalizar login.', 401);

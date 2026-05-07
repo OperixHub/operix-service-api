@@ -36,7 +36,7 @@ export default class AuthService {
 
   static buildSessionPayload(tokenData: any, user: any) {
     return {
-      token: tokenData.access_token,
+      token: tokenData.id_token,
       refresh_token: tokenData.refresh_token,
       expires_in: tokenData.expires_in,
       refresh_expires_in: tokenData.refresh_expires_in,
@@ -77,6 +77,7 @@ export default class AuthService {
     authenticatedUser: any,
     data: { company_name: string; cnpj?: string | null; description?: string | null },
   ) {
+    
     if (!authenticatedUser?.sub) {
       throw new ValidationError('Usuário autenticado não identificado.', 401);
     }

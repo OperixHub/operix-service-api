@@ -115,14 +115,13 @@ export default class KeycloakAdminService {
   }
 
   static async getAdminToken() {
-    const response = await fetch(`${env.keycloakUrl}/realms/master/protocol/openid-connect/token`, {
+    const response = await fetch(`${env.keycloakUrl}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        client_id: 'admin-cli',
-        grant_type: 'password',
-        username: env.keycloakAdminUser,
-        password: env.keycloakAdminPassword,
+        client_id: env.keycloakClientAdminId,
+        client_secret: env.keycloakClientAdminSecret,
+        grant_type: 'client_credentials',
       }).toString(),
     });
 
