@@ -88,7 +88,18 @@ async function provisionUser(decoded: any): Promise<any> {
 
   const tenantId = await resolveTenantId(decoded);
   if (!tenantId) {
-    throw new Error('Token válido, mas sem vínculo de tenant configurado.');
+    return {
+      sub: keycloakId,
+      keycloak_id: keycloakId,
+      email,
+      username,
+      preferred_username: username,
+      name: decoded.name || username,
+      tenant_id: null,
+      admin: false,
+      root: false,
+      onboarding_required: true,
+    };
   }
 
   const name = decoded.name || username;
@@ -119,8 +130,11 @@ export default class AuthMiddleware {
           resolve({
             ...user,
             sub: decoded.sub,
+            email: user.email || decoded.email || null,
+            username: user.username || decoded.preferred_username || decoded.username || decoded.email || decoded.sub,
             roles,
             tenant_id: await resolveTenantId(decoded, user),
+            onboarding_required: !user?.tenant_id,
           });
         } catch (error: any) {
           reject(new Error(error.message || 'Erro ao provisionar usuário no banco.'));

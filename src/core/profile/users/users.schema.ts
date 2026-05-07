@@ -12,6 +12,10 @@ const userSchema = z.object({
   password: z.string().nullable().optional(),
   admin: z.boolean().nullable().optional(),
   root: z.boolean().nullable().optional(),
+  avatar_url: z.string().nullable().optional(),
+  role_title: z.string().nullable().optional(),
+  active: z.boolean().nullable().optional(),
+  preferences: z.record(z.string(), z.any()).nullable().optional(),
   name: z.string().min(1),
 }).openapi('User');
 
@@ -25,10 +29,18 @@ const userCreateSchema = z.object({
   email: z.string().email('Campo "Email" inválido.'),
   password: z.string().min(8, 'Campo "Senha" deve ter no mínimo 8 caracteres.'),
   admin: z.boolean().optional().default(false),
+  role_title: z.string().optional().nullable(),
   modules: z.array(z.enum(manageableModuleKeys)).optional().default([]),
 }).openapi('UserCreate');
+
+const userAccessUpdateSchema = z.object({
+  admin: z.boolean().optional(),
+  root: z.boolean().optional(),
+  active: z.boolean().optional(),
+  role_title: z.string().optional().nullable(),
+}).openapi('UserAccessUpdate');
 
 const userListResponseSchema = buildApiListResponseSchema(userPublicSchema, 'UserListResponse');
 const userResponseSchema = buildApiResponseSchema(userPublicSchema, 'UserResponse');
 
-export { userCreateSchema, userPublicSchema, userResponseSchema, userSchema, userListResponseSchema };
+export { userAccessUpdateSchema, userCreateSchema, userPublicSchema, userResponseSchema, userSchema, userListResponseSchema };

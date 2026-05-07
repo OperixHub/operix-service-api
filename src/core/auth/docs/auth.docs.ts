@@ -4,13 +4,10 @@ import {
   authLoginSchema,
   authRefreshResponseSchema,
   authRefreshSchema,
-  authRegisterResponseSchema,
-  authRegisterSchema,
 } from '../auth.schema.js';
 
 export function registerAuthDocs(registry: OpenAPIRegistry) {
   registry.register('AuthLogin', authLoginSchema);
-  registry.register('AuthRegister', authRegisterSchema);
   registry.register('AuthRefresh', authRefreshSchema);
 
   registry.registerPath({
@@ -22,19 +19,6 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
       200: {
         description: 'Login realizado com sucesso',
         content: { 'application/json': { schema: authLoginResponseSchema } },
-      },
-    },
-  });
-
-  registry.registerPath({
-    method: 'post',
-    path: '/auth/register',
-    tags: ['Autenticação'],
-    request: { body: { content: { 'application/json': { schema: authRegisterSchema } }, required: true } },
-    responses: {
-      201: {
-        description: 'Usuário criado com sucesso',
-        content: { 'application/json': { schema: authRegisterResponseSchema } },
       },
     },
   });

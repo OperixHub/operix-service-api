@@ -25,4 +25,9 @@ export default class UsersController {
     await UsersService.remove(user, tenantId);
     return ResponseHandler.success(res, null, 'Usuário removido com sucesso', 204);
   }
+
+  static async updateAccess(req: Request, res: Response) {
+    const data = await UsersService.updateAccess(Number(req.params.id), (req as any).user, UserModel.fromRequest(req.body));
+    return ResponseHandler.success(res, data, 'Usuário atualizado com sucesso');
+  }
 }

@@ -13,6 +13,7 @@ export default class PermissionsController {
       roles: (req as any).user?.roles || [],
       effective_permissions: snapshot.effective_permissions,
       permissions: snapshot.permissions,
+      access: snapshot.access,
     }, 'Permissões do usuário autenticado obtidas com sucesso');
   }
 

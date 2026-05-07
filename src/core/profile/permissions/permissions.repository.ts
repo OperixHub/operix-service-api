@@ -6,7 +6,7 @@ type PermissionOverrideInput = {
 };
 
 class PermissionsRepository {
-  static tableName = 'permissions';
+  static tableName = 'user_permission_overrides';
 
   static async getOverridesByUserId(userId: number) {
     const connect = await connection.connect();

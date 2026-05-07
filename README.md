@@ -1,195 +1,321 @@
 # Operix Service API
 
-API RESTful para gestão operacional, estoque, identidade e notificações do ecossistema Operix.
+API REST do Operix Service para autenticação, multi-tenancy, RBAC, módulos, planos, trial, gestão operacional, estoque, notificações e configurações organizacionais.
 
 ## Visão Geral
 
-- Runtime principal: `Bun`
-- Framework HTTP: `Express`
-- Banco de dados: `PostgreSQL`
-- Identidade e autorização: `Keycloak`
-- Documentação: `Swagger/OpenAPI`
-- Comunicação em tempo real: `Socket.IO`
+O backend é o ponto central de segurança e regra de negócio. Ele valida tokens Keycloak via JWKS, resolve o tenant do usuário, aplica permissões granulares, calcula módulos habilitados por plano/trial/modo de implantação e protege todas as rotas privadas independentemente do frontend.
 
-O projeto segue uma organização modular com `controllers`, `services`, `repositories`, `models` e `middlewares`, buscando baixa acoplagem e responsabilidades mais claras entre HTTP, regra de negócio, persistência e integração com IAM.
+Responsabilidades principais:
 
-## Principais Ajustes Aplicados
+- autenticação via Keycloak e SSO Google;
+- onboarding de empresa após primeiro login;
+- criação e isolamento de tenants;
+- RBAC com roles de módulo e overrides granulares por usuário;
+- políticas de modo `LOCAL` e `SAAS`;
+- plano/trial/feature flags;
+- rotas operacionais, estoque, notificações, logs e profile;
+- documentação OpenAPI em `/docs`.
 
-- Centralização de variáveis de ambiente em `src/core/config/env.ts`
-- Endpoints de identidade organizados em `/api/identity/*`
-- Correção do fluxo de autenticação e provisionamento multi-tenant
-- Compensação básica em cadastro para evitar órfãos no Keycloak
-- Respostas HTTP mais alinhadas ao REST, incluindo `204 No Content`
-- Endurecimento de segurança com headers HTTP e validação mais explícita
-- Sanitização de dados sensíveis em respostas de usuário
-- Pipeline CI com GitHub Actions
+Comunicação:
 
-## Pré-requisitos
+- frontend chama a API em `/api/*`;
+- API valida JWT emitido pelo Keycloak;
+- API usa PostgreSQL para dados locais;
+- API usa Keycloak Admin API para grupos, usuários e roles;
+- Socket.IO publica eventos por sala `tenant_<id>`.
 
-- [Bun](https://bun.sh/)
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
-
-## Variáveis de Ambiente
-
-1. Copie o arquivo de exemplo:
-
-```bash
-cp .env.example .env
-```
-
-2. Revise os valores de banco, Keycloak e CORS no arquivo `.env`.
-
-## Como Rodar Localmente
-
-1. Instale as dependências:
-
-```bash
-bun install
-```
-
-2. Suba os serviços de apoio:
-
-```bash
-docker compose up -d postgres keycloak pgadmin
-```
-
-3. Rode as migrações:
-
-```bash
-bun run migrate
-```
-
-4. Opcionalmente carregue seeds:
-
-```bash
-bun run seed
-```
-
-5. Inicie a API em desenvolvimento:
-
-```bash
-bun run dev
-```
-
-6. Acesse:
-
-- API: [http://localhost:3333](http://localhost:3333)
-- Healthcheck: [http://localhost:3333/health](http://localhost:3333/health)
-- Swagger: [http://localhost:3333/docs](http://localhost:3333/docs)
-- Keycloak: [http://localhost:8080](http://localhost:8080)
-- PgAdmin: [http://localhost:5050](http://localhost:5050)
-
-## Como Rodar com Docker
-
-O `compose.yaml` já possui a API, PostgreSQL, Keycloak e PgAdmin.
-
-1. Garanta que `.env` exista na raiz.
-2. Suba todo o ambiente:
-
-```bash
-docker compose up -d --build
-```
-
-3. Execute as migrações com a aplicação disponível:
-
-```bash
-docker compose exec api bun run migrate
-```
-
-4. Para derrubar o ambiente:
-
-```bash
-docker compose down -v
-```
-
-## Scripts Úteis
-
-- `bun run dev`: sobe a API em modo desenvolvimento
-- `bun run start`: sobe a API em modo normal
-- `bun run build`: gera build em `dist/`
-- `bun run lint`: valida padrões de código
-- `bun run typecheck`: valida tipos TypeScript
-- `bun run test`: executa toda a suíte
-- `bun run test:unit`: executa testes unitários
-- `bun run test:integration`: executa testes de integração
-- `bun run check`: executa lint, typecheck e testes
-
-## Segurança e LGPD
-
-- Autenticação JWT com validação por `issuer` e `JWKS`
-- Autorização por roles
-- Isolamento por `tenant_id`
-- Remoção de `password` das respostas públicas
-- Logs sem persistência direta de payload sensível
-- Headers de segurança HTTP básicos
-
-Para avançar na aderência à LGPD em produção, recomenda-se complementar com:
-
-- política de retenção de logs
-- mascaramento de PII em exports administrativos
-- trilha de auditoria para consentimento e exclusão
-- processo operacional para atendimento de titulares
-
-## Testes
-
-Os testes ficam em `tests/unit` e `tests/integration`.
-
-Cobertura atual priorizada:
-
-- fluxo de cadastro com Keycloak e persistência local
-- compensação em falha de cadastro
-- padronização das respostas HTTP
-- rotas principais de identidade
-
-## CI/CD
-
-A pipeline em `.github/workflows/ci.yml` executa:
-
-1. instalação das dependências com Bun
-2. lint
-3. typecheck
-4. testes
-5. build da aplicação
-
-## Guia Básico de Deploy em VPS
-
-1. Instale Docker e Docker Compose na VPS.
-2. Clone o repositório no servidor.
-3. Crie e ajuste o `.env` com URLs e credenciais reais.
-4. Suba os containers:
-
-```bash
-docker compose up -d --build
-```
-
-5. Rode as migrações:
-
-```bash
-docker compose exec api bun run migrate
-```
-
-6. Coloque a API atrás de um reverse proxy como Nginx ou Traefik.
-7. Publique HTTPS com Let's Encrypt.
-8. Restrinja portas administrativas como PgAdmin e Keycloak.
-
-## Estrutura Resumida
+## Arquitetura
 
 ```text
 src/
   core/
-    auth/
-    config/
-    docs/
-    identity/
-    logs/
-    middlewares/
-    utils/
+    auth/                  Autenticação, callback OIDC, refresh, onboarding e integração Keycloak
+    config/                Ambiente e modo de implantação
+    database/              Pool PostgreSQL
+    docs/                  OpenAPI agregado
+    logs/                  Logs operacionais por tenant
+    middlewares/           Auth, permissões, roles, segurança, erros e validação
+    profile/
+      permissions/         Catálogo de módulos, permissões, planos, trial e overrides
+      tenants/             Tenants, policy LOCAL/SAAS, empresa e assinatura
+      users/               Usuários do tenant, RBAC e acesso administrativo
+      profile-settings.*   Perfil, empresa e sistema
+    schemas/               Schemas de resposta e helpers Zod/OpenAPI
+    utils/                 Sanitização, respostas, messaging e validação
+  database/
+    migrations/            Evolução do schema PostgreSQL
   modules/
-    inventory/
-    notifications/
-    operational/
+    inventory/             Estoque
+    notifications/         Informações e alertas do sistema
+    operational/           Serviços, OS, status e tipos de produto
 tests/
-  integration/
-  unit/
+  unit/                    Policies, permissões, onboarding e services
+  integration/             Rotas HTTP principais
 ```
+
+Padrões usados:
+
+- `controller`: HTTP e resposta;
+- `service`: regra de negócio;
+- `repository`: persistência;
+- `schema`: validação de entrada;
+- `middleware`: autenticação/autorização transversal;
+- `catalog/policy`: regras estáveis e reutilizáveis.
+
+## Fluxo de Autenticação e Cadastro
+
+Existe um único fluxo de cadastro de empresa:
+
+1. usuário acessa o app;
+2. frontend inicia login Google via Keycloak usando Authorization Code + PKCE;
+3. backend troca `code` por tokens em `/api/auth/callback`;
+4. backend valida o token pelo JWKS;
+5. se o usuário não tem tenant, retorna `onboarding_required`;
+6. frontend exibe onboarding;
+7. `/api/auth/onboarding` cria tenant, grupo Keycloak, usuário local proprietário e roles;
+8. usuário passa a acessar o sistema com permissões calculadas.
+
+O endpoint público legado `/api/auth/register` foi removido para evitar duplicidade. Usuários internos da empresa são criados por administradores em `/api/users`.
+
+## Modos de Implantação
+
+`DEPLOYMENT_MODE=LOCAL`
+
+- permite apenas um tenant;
+- após o primeiro tenant, onboarding/cadastro de empresa fica bloqueado;
+- proprietário/root tem acesso completo;
+- planos, cobrança e assinatura não bloqueiam recursos;
+- todos os módulos ficam habilitados.
+
+`DEPLOYMENT_MODE=SAAS`
+
+- permite múltiplos tenants;
+- permissões dependem de plano, trial, roles e overrides;
+- trial gratuito dura 30 dias;
+- trial ativo libera acesso completo;
+- trial vencido cai para o plano configurado, atualmente `free` por padrão.
+
+## Planos, Trial e Feature Flags
+
+Catálogo em `src/core/profile/permissions/plans.catalog.ts`:
+
+- `free`: acesso básico;
+- `trial`: acesso completo por 30 dias;
+- `starter`: operação e organização;
+- `professional`: operação, organização, estoque e notificações;
+- `enterprise`: acesso completo e base para SSO corporativo.
+
+Cada plano define:
+
+- `module_keys`;
+- `feature_flags`;
+- permissões máximas permitidas.
+
+O snapshot efetivo do usuário fica em `/api/permissions/me`:
+
+```json
+{
+  "effective_permissions": ["dashboard.access"],
+  "access": {
+    "enabled_modules": ["dashboard", "operational"],
+    "feature_flags": ["users.basic"],
+    "trial": { "active": true, "days_remaining": 30 }
+  }
+}
+```
+
+## RBAC e Permissões
+
+Roles de módulo:
+
+- `module:operational`;
+- `module:inventory`;
+- `module:organization`;
+- `module:notifications`.
+
+Permissões granulares atuais:
+
+- `dashboard.access`;
+- `operational.services.access`;
+- `operational.status.access`;
+- `operational.types-products.access`;
+- `inventory.stock.access`;
+- `organization.users.access`;
+- `organization.settings.access`;
+- `organization.tenants.access`;
+- `notifications.system-info.access`.
+
+Regras:
+
+- frontend esconde menus sem permissão;
+- backend sempre valida com `PermissionsMiddleware.requirePermission`;
+- overrides por usuário podem permitir/negar permissões dentro dos limites do plano;
+- em `LOCAL`, proprietário/root tem full access.
+
+## Profile e Configurações
+
+Rotas:
+
+- `GET /api/profile/me`;
+- `PATCH /api/profile/me`;
+- `GET /api/profile/company`;
+- `PATCH /api/profile/company`;
+- `GET /api/profile/system`.
+
+Cobrem:
+
+- perfil: nome, email, avatar, cargo, preferências;
+- empresa: nome, CNPJ, descrição, logo, módulos;
+- sistema: plano, trial, feature flags, permissões e catálogo.
+
+## Ambiente Local
+
+Pré-requisitos:
+
+- Bun `>=1.3.9`;
+- Docker;
+- Docker Compose;
+- PostgreSQL via compose;
+- Keycloak via compose.
+
+Setup:
+
+```bash
+cp .env.example .env
+bun install
+bun run docker:dev
+bun run migrate
+bun run dev
+```
+
+URLs:
+
+- API: `http://localhost:3333`;
+- health: `http://localhost:3333/health`;
+- docs: `http://localhost:3333/docs`;
+- Keycloak: `http://localhost:8080`;
+- PgAdmin: conforme compose.
+
+Variáveis principais:
+
+```env
+APP_NAME=operix-service
+PORT=3333
+NODE_ENV=development
+ORIGIN=http://localhost:3000,http://localhost:5173
+DEPLOYMENT_MODE=LOCAL
+FRONTEND_URL=http://localhost:5173
+DATABASE_URL=postgresql://admin:admin@localhost:5432/operix-service
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=operix-service
+KEYCLOAK_CLIENT_ID=operix-service-app
+KEYCLOAK_JWKS_URI=http://localhost:8080/realms/operix-service/protocol/openid-connect/certs
+KEYCLOAK_ISSUER=http://localhost:8080/realms/operix-service
+```
+
+Keycloak:
+
+- importe `config/realm-export.json`;
+- configure o Identity Provider Google com alias `google`;
+- configure redirect URI do frontend;
+- mantenha o client público com PKCE `S256`.
+
+## SaaS e Produção
+
+Checklist recomendado:
+
+- `DEPLOYMENT_MODE=SAAS`;
+- Keycloak externo ou clusterizado;
+- PostgreSQL gerenciado com backups automáticos;
+- reverse proxy com Nginx, Traefik ou ingress;
+- HTTPS obrigatório;
+- `ORIGIN` restrito aos domínios reais;
+- segredos fora do repositório;
+- rotação de credenciais Keycloak/Admin;
+- logs centralizados;
+- métricas de API, banco e fila futura;
+- migrations versionadas no deploy;
+- healthcheck no orquestrador;
+- backups testados;
+- hardening de headers e rate limit na borda;
+- CI/CD com typecheck, testes, build e migrações controladas.
+
+## Scripts
+
+- `bun run dev`: API com watch;
+- `bun run start`: API normal;
+- `bun run build`: bundle em `dist/`;
+- `bun run typecheck`: TypeScript;
+- `bun run lint`: ESLint;
+- `bun run test`: todos os testes;
+- `bun run test:unit`: unitários;
+- `bun run test:integration`: integração;
+- `bun run migrate`: migrations;
+- `bun run seed`: seeds;
+- `bun run docker:dev`: compose local;
+- `bun run docker:prod`: compose produção.
+
+## Testes
+
+Cobertura atual relevante:
+
+- onboarding com Keycloak;
+- restrição de tenant em `LOCAL`;
+- permissões e overrides;
+- plano/trial;
+- queda para plano free após trial;
+- typecheck e build.
+
+Comandos:
+
+```bash
+bun run typecheck
+bun test tests/unit/auth.service.test.ts tests/unit/tenant-policy.service.test.ts tests/unit/permissions.service.test.ts
+bun run build
+```
+
+Observação: alguns testes de integração usam `supertest` com porta dinâmica e podem falhar em sandboxes que bloqueiam `listen(0)`.
+
+## Segurança
+
+- JWT validado por issuer e JWKS;
+- token sem tenant só acessa onboarding/me;
+- rotas privadas passam por auth global;
+- permissões validadas no backend;
+- isolamento por `tenant_id`;
+- respostas de usuário passam por sanitização;
+- criação de tenant em `LOCAL` usa advisory lock;
+- rollback remove tenant/grupo quando onboarding falha;
+- senha não é persistida localmente;
+- login social é delegado ao Keycloak.
+
+## Troubleshooting
+
+- `Token inválido`: confira `KEYCLOAK_ISSUER`, realm e relógio dos containers.
+- `onboarding bloqueado`: em `LOCAL`, já existe tenant.
+- `sem permissão`: confira `/api/permissions/me`, roles Keycloak e overrides.
+- `Google não abre`: confirme alias `google` no Keycloak.
+- `CORS`: ajuste `ORIGIN`.
+- `migration falha`: confira ordem e banco definido em `DATABASE_URL`.
+
+## Roadmap
+
+- billing com gateway de pagamento;
+- upgrade/downgrade de planos;
+- webhooks de pagamento;
+- auditoria detalhada por entidade;
+- analytics de uso por tenant;
+- PWA/mobile;
+- SSO corporativo SAML/OIDC enterprise;
+- white-label por tenant;
+- marketplace de módulos;
+- API pública com tokens por integração;
+- filas assíncronas para notificações e relatórios;
+- dashboards avançados;
+- observabilidade com tracing;
+- rate limiting por tenant;
+- feature toggles operacionais;
+- automações de atendimento;
+- IA para resumo de OS, sugestões e classificação;
+- permissões avançadas por escopo, campo e ação.

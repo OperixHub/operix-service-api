@@ -47,7 +47,7 @@ export default class KeycloakAdminService {
       throw new Error('Credenciais inválidas ou erro no serviço de autenticação.');
     }
 
-    return response.json();
+    return response.json() as Promise<any>;
   }
 
   static async refreshToken(refreshToken: string) {
@@ -66,6 +66,49 @@ export default class KeycloakAdminService {
     }
 
     return response.json();
+  }
+
+  static buildAuthorizationUrl(params: {
+    redirectUri: string;
+    state: string;
+    codeChallenge: string;
+    identityProvider?: string;
+  }) {
+    const url = new URL(`${this.realmBaseUrl}/protocol/openid-connect/auth`);
+    url.searchParams.set('client_id', env.keycloakClientId);
+    url.searchParams.set('redirect_uri', params.redirectUri);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('scope', 'openid profile email');
+    url.searchParams.set('state', params.state);
+    url.searchParams.set('code_challenge', params.codeChallenge);
+    url.searchParams.set('code_challenge_method', 'S256');
+
+    if (params.identityProvider) {
+      url.searchParams.set('kc_idp_hint', params.identityProvider);
+    }
+
+    return url.toString();
+  }
+
+  static async exchangeAuthorizationCode(code: string, redirectUri: string, codeVerifier: string): Promise<any> {
+    const response = await fetch(`${this.realmBaseUrl}/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: env.keycloakClientId,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        code_verifier: codeVerifier,
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao finalizar login no Keycloak: ${response.status} - ${error}`);
+    }
+
+    return response.json() as Promise<any>;
   }
 
   static async getAdminToken() {

@@ -3,6 +3,8 @@ import { sanitizeUser } from '../../utils/sanitize.js';
 import UsersRepository from '../users/users.repository.js';
 import KeycloakAdminService from '../../auth/keycloak-admin.service.js';
 import PermissionsRepository from './permissions.repository.js';
+import TenantRepository from '../tenants/tenants.repository.js';
+import { env } from '../../config/env.js';
 import {
   getManageableModuleCatalog,
   getPermissionCatalog,
@@ -10,6 +12,7 @@ import {
   getPermissionKeysForRoles,
   isPermissionKey,
 } from './permissions.catalog.js';
+import { buildPlanContext, getPlanCatalog } from './plans.catalog.js';
 
 type PermissionOverride = {
   permission_key: string;
@@ -36,14 +39,20 @@ export default class PermissionsService {
       permissions: permissions.filter((permission) => permission.module_key === module.key),
     }));
 
-    return { modules, permissions };
+    return { modules, permissions, plans: getPlanCatalog() };
   }
 
   static async getCurrentUserPermissions(user: AuthenticatedUser) {
+    const tenant = user.tenant_id ? await TenantRepository.findById(user.tenant_id) : null;
+    const planContext = buildPlanContext(tenant);
     const overrides = user.id ? await PermissionsRepository.getOverridesByUserId(user.id) : [];
+
     return this.buildPermissionSnapshot({
       roles: user.roles || [],
       overrides,
+      planPermissionKeys: planContext.permission_keys,
+      fullAccess: env.deploymentMode === 'LOCAL' || Boolean(user.root),
+      planContext,
     });
   }
 
@@ -61,7 +70,15 @@ export default class PermissionsService {
       ? await KeycloakAdminService.getUserRealmRoleNames(targetUser.keycloak_id)
       : [];
     const overrides = await PermissionsRepository.getOverridesByUserId(targetUserId);
-    const snapshot = this.buildPermissionSnapshot({ roles, overrides });
+    const tenant = await TenantRepository.findById(actor.tenant_id);
+    const planContext = buildPlanContext(tenant);
+    const snapshot = this.buildPermissionSnapshot({
+      roles,
+      overrides,
+      planPermissionKeys: planContext.permission_keys,
+      fullAccess: env.deploymentMode === 'LOCAL' || Boolean(targetUser.root),
+      planContext,
+    });
 
     return {
       user: sanitizeUser(targetUser),
@@ -70,6 +87,7 @@ export default class PermissionsService {
       overrides,
       effective_permissions: snapshot.effective_permissions,
       permissions: snapshot.permissions,
+      access: snapshot.access,
     };
   }
 
@@ -96,15 +114,31 @@ export default class PermissionsService {
   static buildPermissionSnapshot({
     roles = [],
     overrides = [],
+    planPermissionKeys,
+    fullAccess = false,
+    planContext = null,
   }: {
     roles?: string[];
     overrides?: PermissionOverride[];
+    planPermissionKeys?: string[];
+    fullAccess?: boolean;
+    planContext?: any;
   }) {
     const rolePermissions = new Set(getPermissionKeysForRoles(roles));
     const overrideMap = new Map(overrides.map((override) => [override.permission_key, override.effect]));
+    const planPermissions = new Set(planPermissionKeys || getPermissionCatalog().map((permission) => permission.key));
 
     const permissions = getPermissionCatalog().map((permission) => {
       const effect = overrideMap.get(permission.key);
+      const blockedByPlan = !fullAccess && !planPermissions.has(permission.key);
+
+      if (fullAccess) {
+        return {
+          ...permission,
+          allowed: true,
+          source: env.deploymentMode === 'LOCAL' ? ('deployment:local' as const) : ('role' as const),
+        };
+      }
 
       if (effect === 'deny') {
         return {
@@ -115,6 +149,14 @@ export default class PermissionsService {
       }
 
       if (effect === 'allow') {
+        if (blockedByPlan) {
+          return {
+            ...permission,
+            allowed: false,
+            source: 'plan' as const,
+          };
+        }
+
         return {
           ...permission,
           allowed: true,
@@ -123,6 +165,14 @@ export default class PermissionsService {
       }
 
       if (rolePermissions.has(permission.key)) {
+        if (blockedByPlan) {
+          return {
+            ...permission,
+            allowed: false,
+            source: 'plan' as const,
+          };
+        }
+
         return {
           ...permission,
           allowed: true,
@@ -140,6 +190,7 @@ export default class PermissionsService {
     return {
       effective_permissions: permissions.filter((permission) => permission.allowed).map((permission) => permission.key),
       permissions,
+      access: planContext,
     };
   }
 

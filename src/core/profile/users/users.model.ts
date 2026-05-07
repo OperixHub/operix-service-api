@@ -9,6 +9,10 @@ export default class UserModel {
   password?: string | null;
   admin?: boolean | null;
   root?: boolean | null;
+  avatar_url?: string | null;
+  role_title?: string | null;
+  active?: boolean | null;
+  preferences?: Record<string, unknown> | null;
 
   constructor({
     id = null,
@@ -19,6 +23,10 @@ export default class UserModel {
     password = null,
     admin = false,
     root = false,
+    avatar_url = null,
+    role_title = null,
+    active = true,
+    preferences = {},
     tenant = null,
     name = ''
   }: any = {}) {
@@ -30,6 +38,10 @@ export default class UserModel {
     this.password = password;
     this.admin = admin;
     this.root = root;
+    this.avatar_url = avatar_url;
+    this.role_title = role_title;
+    this.active = active;
+    this.preferences = preferences;
     this.tenant = tenant;
     this.name = name;
   }
@@ -46,7 +58,11 @@ export default class UserModel {
         password: body.password,
         tenant: body.tenant,
         admin: body.admin || false,
-        root: body.root || false
+        root: body.root || false,
+        avatar_url: body.avatar_url || null,
+        role_title: body.role_title || null,
+        active: body.active ?? true,
+        preferences: body.preferences || {},
       }
     );
   }
@@ -66,6 +82,10 @@ export default class UserModel {
       keycloak_id: this.keycloak_id,
       admin: this.admin,
       root: this.root,
+      avatar_url: this.avatar_url,
+      role_title: this.role_title,
+      active: this.active,
+      preferences: this.preferences,
     };
   }
 }

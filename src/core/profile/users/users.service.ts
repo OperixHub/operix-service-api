@@ -99,6 +99,44 @@ export default class UsersService {
     return UsersRepository.remove(user, tenantId);
   }
 
+  static async updateAccess(
+    targetUserId: number,
+    actor: { tenant_id?: number | null; id?: number | null; root?: boolean | null },
+    data: Partial<UserModel>,
+  ) {
+    if (!actor.tenant_id) {
+      throw new ValidationError('Tenant do usuário autenticado não encontrado.', 422);
+    }
+
+    const targetUser = await UsersRepository.findByIdAndTenantId(targetUserId, actor.tenant_id);
+    if (!targetUser) {
+      throw new ValidationError('Usuário não encontrado.', 404);
+    }
+
+    if (targetUser.root && !actor.root) {
+      throw new ValidationError('Somente o proprietário pode alterar outro proprietário.', 403);
+    }
+
+    const updated = await UsersRepository.updateUserAccess(targetUserId, actor.tenant_id, data);
+    return sanitizeUser(updated);
+  }
+
+  static async updateOwnProfile(
+    actor: { tenant_id?: number | null; id?: number | null },
+    data: Partial<UserModel>,
+  ) {
+    if (!actor.tenant_id || !actor.id) {
+      throw new ValidationError('Usuário autenticado não encontrado.', 422);
+    }
+
+    const updated = await UsersRepository.updateProfile(actor.id, actor.tenant_id, data);
+    if (!updated) {
+      throw new ValidationError('Usuário não encontrado.', 404);
+    }
+
+    return sanitizeUser(updated);
+  }
+
   private static resolveRoleKeys(isAdmin: boolean, moduleKeys: string[]) {
     const normalizedModuleKeys = (isAdmin && moduleKeys.length === 0)
       ? ['operational', 'inventory', 'organization', 'notifications']

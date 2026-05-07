@@ -15,6 +15,7 @@ export default class PermissionsMiddleware {
         if (!Array.isArray(user.permissions)) {
           const snapshot = await PermissionsService.getCurrentUserPermissions(user);
           user.permissions = snapshot.effective_permissions;
+          user.access = snapshot.access;
         }
 
         if (!PermissionsService.hasPermission(permissionKey, user.permissions)) {

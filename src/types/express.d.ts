@@ -8,11 +8,12 @@ declare module 'express' {
       name?: string | null;
       username?: string | null;
       preferred_username: string;
-      tenant_id: number;
+      tenant_id: number | null;
       roles: string[];
       permissions?: string[];
       admin?: boolean;
       root?: boolean;
+      onboarding_required?: boolean;
       id?: number; // ID local na tabela users (após provisionamento)
     };
   }

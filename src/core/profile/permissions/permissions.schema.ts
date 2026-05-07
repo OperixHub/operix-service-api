@@ -5,7 +5,7 @@ import { manageableModuleKeys } from './permissions.catalog.js';
 
 const manageableModuleKeySchema = z.enum(manageableModuleKeys);
 const permissionEffectSchema = z.enum(['allow', 'deny']);
-const permissionSourceSchema = z.enum(['authenticated', 'role', 'override:allow', 'override:deny', 'none']);
+const permissionSourceSchema = z.enum(['authenticated', 'role', 'override:allow', 'override:deny', 'deployment:local', 'plan', 'none']);
 
 const permissionCatalogItemSchema = z.object({
   key: z.string(),
@@ -59,6 +59,7 @@ const permissionsCatalogResponseSchema = buildApiResponseSchema(
   z.object({
     modules: z.array(permissionModuleSchema),
     permissions: z.array(permissionCatalogItemSchema),
+    plans: z.array(z.any()),
   }),
   'PermissionsCatalogResponse',
 );
@@ -68,6 +69,7 @@ const permissionsMeResponseSchema = buildApiResponseSchema(
     roles: z.array(z.string()),
     effective_permissions: z.array(z.string()),
     permissions: z.array(permissionDecisionSchema),
+    access: z.any().optional(),
   }),
   'PermissionsMeResponse',
 );
@@ -80,6 +82,7 @@ const permissionsUserResponseSchema = buildApiResponseSchema(
     overrides: z.array(permissionOverrideSchema),
     effective_permissions: z.array(z.string()),
     permissions: z.array(permissionDecisionSchema),
+    access: z.any().optional(),
   }),
   'PermissionsUserResponse',
 );

@@ -1,4 +1,11 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const defaultOrigins = ['http://localhost:3000', 'http://localhost:5173'];
+const validDeploymentModes = ['LOCAL', 'SAAS'] as const;
+
+type DeploymentMode = typeof validDeploymentModes[number];
 
 function parseOrigins(value?: string) {
   if (!value) {
@@ -16,6 +23,10 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 3333,
   origins: parseOrigins(process.env.ORIGIN),
+  deploymentMode: (validDeploymentModes.includes(process.env.DEPLOYMENT_MODE as DeploymentMode)
+    ? process.env.DEPLOYMENT_MODE
+    : 'LOCAL') as DeploymentMode,
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   databaseUrl: process.env.DATABASE_URL || 'postgresql://admin:admin@localhost:5432/operix-service',
   keycloakUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
   keycloakRealm: process.env.KEYCLOAK_REALM || 'operix-service',
@@ -25,3 +36,7 @@ export const env = {
   keycloakIssuer: process.env.KEYCLOAK_ISSUER || `${process.env.KEYCLOAK_URL || 'http://localhost:8080'}/realms/${process.env.KEYCLOAK_REALM || 'operix-service'}`,
   keycloakJwksUri: process.env.KEYCLOAK_JWKS_URI || `${process.env.KEYCLOAK_URL || 'http://localhost:8080'}/realms/${process.env.KEYCLOAK_REALM || 'operix-service'}/protocol/openid-connect/certs`,
 };
+
+export function isLocalDeployment() {
+  return env.deploymentMode === 'LOCAL';
+}

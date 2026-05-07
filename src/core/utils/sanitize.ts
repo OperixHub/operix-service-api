@@ -8,6 +8,12 @@ type UserLike = {
   keycloak_id?: string | null;
   admin?: boolean | null;
   root?: boolean | null;
+  onboarding_required?: boolean | null;
+  roles?: string[] | null;
+  avatar_url?: string | null;
+  role_title?: string | null;
+  active?: boolean | null;
+  preferences?: Record<string, unknown> | null;
   createdAt?: string | Date | null;
   updatedAt?: string | Date | null;
 };
@@ -27,6 +33,12 @@ export function sanitizeUser(user: UserLike | null | undefined) {
     keycloak_id: user.keycloak_id ?? null,
     admin: Boolean(user.admin),
     root: Boolean(user.root),
+    onboarding_required: Boolean(user.onboarding_required),
+    roles: user.roles || [],
+    avatar_url: user.avatar_url ?? null,
+    role_title: user.role_title ?? null,
+    active: user.active ?? true,
+    preferences: user.preferences || {},
     createdAt: user.createdAt ?? null,
     updatedAt: user.updatedAt ?? null,
   };

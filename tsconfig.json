@@ -12,6 +12,11 @@
       "src/types",
       "./node_modules/@types"
     ],
+    "types": [
+      "node",
+      "bun",
+      "express"
+    ],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "noEmit": true,

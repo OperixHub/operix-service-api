@@ -115,6 +115,16 @@ const permissionCatalog: PermissionCatalogItem[] = [
     route: '/definicoes/usuarios',
   },
   {
+    key: 'organization.settings.access',
+    module_key: 'organization',
+    module_label: moduleMap.get('organization')!.label,
+    module_description: moduleMap.get('organization')!.description,
+    role_key: moduleMap.get('organization')!.role_key,
+    label: 'Configurações',
+    description: 'Acessar perfil, empresa, permissões, módulos e contexto do plano.',
+    route: '/definicoes/configuracoes',
+  },
+  {
     key: 'organization.tenants.access',
     module_key: 'organization',
     module_label: moduleMap.get('organization')!.label,
@@ -132,7 +142,7 @@ const permissionCatalog: PermissionCatalogItem[] = [
     role_key: moduleMap.get('notifications')!.role_key,
     label: 'Informações do Sistema',
     description: 'Consultar notificações internas e lembretes operacionais do sistema.',
-    route: null,
+    route: '/notificacoes/informacoes-do-sistema',
   },
 ];
 
@@ -145,7 +155,7 @@ const rolePermissionMap: Record<string, string[]> = {
     'operational.types-products.access',
   ],
   'module:inventory': ['inventory.stock.access'],
-  'module:organization': ['organization.users.access', 'organization.tenants.access'],
+  'module:organization': ['organization.users.access', 'organization.settings.access', 'organization.tenants.access'],
   'module:notifications': ['notifications.system-info.access'],
 };
 
