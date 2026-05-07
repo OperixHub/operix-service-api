@@ -107,6 +107,7 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "email",
+            "user.attribute": "email",
             "jsonType.label": "String"
           }
         },
@@ -120,6 +121,7 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "username",
+            "user.attribute": "username",
             "jsonType.label": "String"
           }
         },
@@ -134,7 +136,7 @@
             "access.token.claim": "true",
             "claim.name": "tenant_id",
             "user.attribute": "tenant_id",
-            "jsonType.label": "int"
+            "jsonType.label": "long"
           }
         },
         {
@@ -167,7 +169,7 @@
       "firstBrokerLoginFlowAlias": "first broker login",
       "config": {
         "clientId": "{{GOOGLE_CLIENT_ID}}",
-        "clientSecret": "{{GOOGLE_CLIENT_ID}}",
+        "clientSecret": "{{GOOGLE_CLIENT_SECRET}}",
         "defaultScope": "openid profile email",
         "syncMode": "IMPORT"
       }

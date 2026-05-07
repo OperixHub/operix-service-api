@@ -1,4 +1,28 @@
 services:
+  api:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      restart: unless-stopped
+      env_file:
+        - .env
+      environment:
+        NODE_ENV: development
+        DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+        KEYCLOAK_URL: http://keycloak:8080
+        KEYCLOAK_PUBLIC_URL: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}
+        KEYCLOAK_JWKS_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+        KEYCLOAK_ISSUER: http://keycloak:8080/realms/${KEYCLOAK_REALM}
+      ports:
+        - "${PORT:-3333}:3333"
+      depends_on:
+        postgres:
+          condition: service_healthy
+        keycloak:
+          condition: service_started
+      networks:
+        - operix-network
+        
   postgres:
     image: postgres:14-alpine
     restart: unless-stopped
