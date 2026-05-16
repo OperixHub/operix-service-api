@@ -1,5 +1,6 @@
 import AuthController from '../../src/core/auth/auth.controller.js';
 import AuthService from '../../src/core/auth/auth.service.js';
+import AuthMiddleware from '../../src/core/middlewares/auth.middleware.js';
 import PermissionsService from '../../src/core/profile/permissions/permissions.service.js';
 import { createRequestMock, createResponseMock } from '../support/express-mocks.js';
 
@@ -43,6 +44,88 @@ describe('Testes de Integração - Rotas de Autenticação', () => {
       msg: 'Sessão carregada.',
       data: expect.objectContaining({
         permissions: ['organization.users.access'],
+      }),
+    }));
+  });
+
+  test('callback usa access_token para montar a sessão autenticada', async () => {
+    jest.spyOn(AuthService, 'exchangeAuthorizationCode').mockResolvedValue({
+      access_token: 'access-token',
+      id_token: 'id-token',
+      refresh_token: 'refresh-token',
+      expires_in: 300,
+      refresh_expires_in: 1800,
+      token_type: 'Bearer',
+    } as any);
+    jest.spyOn(AuthMiddleware, 'verifyRawToken').mockResolvedValue({
+      id: 5,
+      sub: 'kc-user',
+      keycloak_id: 'kc-user',
+      username: 'user',
+      email: 'user@operix.dev',
+      tenant_id: 1,
+      roles: ['module:organization'],
+    } as any);
+
+    const req = createRequestMock({
+      body: {
+        code: 'auth-code',
+        redirect_uri: 'http://localhost:5173/#/auth/callback',
+        code_verifier: 'verifier-1234567890123456',
+      },
+    });
+    const res = createResponseMock();
+
+    await AuthController.callback(req, res);
+
+    expect(AuthMiddleware.verifyRawToken).toHaveBeenCalledWith('access-token');
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Login realizado com sucesso.',
+      data: expect.objectContaining({
+        token: 'access-token',
+        id_token: 'id-token',
+        user: expect.objectContaining({
+          sub: 'kc-user',
+          keycloak_id: 'kc-user',
+        }),
+      }),
+    }));
+  });
+
+  test('refresh devolve o mesmo contrato de sessão do login', async () => {
+    jest.spyOn(AuthService, 'refreshToken').mockResolvedValue({
+      access_token: 'new-access-token',
+      id_token: 'new-id-token',
+      refresh_token: 'new-refresh-token',
+      expires_in: 300,
+      refresh_expires_in: 1800,
+      token_type: 'Bearer',
+    } as any);
+    jest.spyOn(AuthMiddleware, 'verifyRawToken').mockResolvedValue({
+      id: 8,
+      sub: 'kc-refresh',
+      keycloak_id: 'kc-refresh',
+      username: 'refresh.user',
+      email: 'refresh@operix.dev',
+      tenant_id: 3,
+      roles: ['module:inventory'],
+    } as any);
+
+    const req = createRequestMock({ body: { refresh_token: 'refresh-token' } });
+    const res = createResponseMock();
+
+    await AuthController.refreshToken(req, res);
+
+    expect(AuthMiddleware.verifyRawToken).toHaveBeenCalledWith('new-access-token');
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      msg: 'Refresh token realizado com sucesso!',
+      data: expect.objectContaining({
+        token: 'new-access-token',
+        refresh_token: 'new-refresh-token',
+        id_token: 'new-id-token',
+        user: expect.objectContaining({
+          sub: 'kc-refresh',
+        }),
       }),
     }));
   });

@@ -31,6 +31,66 @@ export default class KeycloakAdminService {
     return `${env.keycloakUrl}/admin/realms/${env.keycloakRealm}`;
   }
 
+  private static async requestServiceAccountAdminToken() {
+    if (!env.keycloakClientAdminId || !env.keycloakClientAdminSecret) {
+      throw new Error('Credenciais do client admin não configuradas.');
+    }
+
+    const response = await fetch(`${env.keycloakUrl}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: env.keycloakClientAdminId,
+        client_secret: env.keycloakClientAdminSecret,
+        grant_type: 'client_credentials',
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao autenticar via service account: ${error}`);
+    }
+
+    const data = await response.json() as { access_token: string };
+    return data.access_token;
+  }
+
+  private static async requestMasterAdminToken() {
+    const response = await fetch(`${env.keycloakUrl}/realms/master/protocol/openid-connect/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: 'admin-cli',
+        grant_type: 'password',
+        username: env.keycloakAdminUser,
+        password: env.keycloakAdminPassword,
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao autenticar via admin-cli: ${error}`);
+    }
+
+    const data = await response.json() as { access_token: string };
+    return data.access_token;
+  }
+
+  private static async validateAdminAccess(adminToken: string) {
+    const response = await fetch(`${this.adminBaseUrl}/groups?max=1`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Token admin sem permissão para consultar grupos: ${response.status} - ${error}`);
+    }
+  }
+
   static async login(username: string, password: string) {
     const response = await fetch(`${this.realmBaseUrl}/protocol/openid-connect/token`, {
       method: 'POST',
@@ -40,6 +100,7 @@ export default class KeycloakAdminService {
         grant_type: 'password',
         username,
         password,
+        scope: 'openid profile email',
       }).toString(),
     });
 
@@ -58,6 +119,7 @@ export default class KeycloakAdminService {
         client_id: env.keycloakClientId,
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
+        scope: 'openid profile email',
       }).toString(),
     });
 
@@ -66,6 +128,28 @@ export default class KeycloakAdminService {
     }
 
     return response.json();
+  }
+
+  static async logout(refreshToken: string) {
+    const body = new URLSearchParams({
+      client_id: env.keycloakClientId,
+      refresh_token: refreshToken,
+    });
+
+    if (env.keycloakClientAdminSecret) {
+      body.set('client_secret', env.keycloakClientAdminSecret);
+    }
+
+    const response = await fetch(`${this.realmBaseUrl}/protocol/openid-connect/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Falha ao encerrar a sessão no Keycloak: ${response.status} - ${error}`);
+    }
   }
 
   static buildAuthorizationUrl(params: {
@@ -115,23 +199,25 @@ export default class KeycloakAdminService {
   }
 
   static async getAdminToken() {
-    const response = await fetch(`${env.keycloakUrl}/realms/${env.keycloakRealm}/protocol/openid-connect/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: env.keycloakClientAdminId,
-        client_secret: env.keycloakClientAdminSecret,
-        grant_type: 'client_credentials',
-      }).toString(),
-    });
+    const errors: string[] = [];
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Não foi possível autenticar a administração: ${error}`);
+    try {
+      const serviceAccountToken = await this.requestServiceAccountAdminToken();
+      await this.validateAdminAccess(serviceAccountToken);
+      return serviceAccountToken;
+    } catch (error: any) {
+      errors.push(error.message || 'Falha desconhecida no service account.');
     }
 
-    const data = await response.json() as { access_token: string };
-    return data.access_token;
+    try {
+      const masterAdminToken = await this.requestMasterAdminToken();
+      await this.validateAdminAccess(masterAdminToken);
+      return masterAdminToken;
+    } catch (error: any) {
+      errors.push(error.message || 'Falha desconhecida no admin-cli.');
+    }
+
+    throw new Error(`Não foi possível autenticar a administração. ${errors.join(' | ')}`);
   }
 
   static async findGroupByName(groupName: string, adminToken: string): Promise<Group | null> {

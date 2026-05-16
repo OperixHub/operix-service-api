@@ -17,6 +17,7 @@ router.post('/authorize', ValidateMiddleware.validateSchema(authAuthorizeSchema)
 router.post('/callback', ValidateMiddleware.validateSchema(authCallbackSchema), AuthController.callback);
 router.post('/login', ValidateMiddleware.validateSchema(authLoginSchema), AuthController.login);
 router.post('/refresh', ValidateMiddleware.validateSchema(authRefreshSchema), AuthController.refreshToken);
+router.post('/logout', ValidateMiddleware.validateSchema(authRefreshSchema), AuthController.logout);
 router.get('/me', AuthMiddleware.authToken, AuthController.me);
 router.post(
   '/onboarding',

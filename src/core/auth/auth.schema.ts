@@ -53,16 +53,9 @@ const authSessionDataSchema = z.object({
   expires_in: z.number().optional(),
   refresh_expires_in: z.number().optional(),
   token_type: z.string().optional(),
+  id_token: z.string().nullable().optional(),
   user: sanitizedUserSchema.nullable().optional(),
 }).openapi('AuthSessionData');
-
-const authRefreshDataSchema = z.object({
-  access_token: z.string(),
-  refresh_token: z.string(),
-  expires_in: z.number().optional(),
-  refresh_expires_in: z.number().optional(),
-  token_type: z.string().optional(),
-}).openapi('AuthRefreshData');
 
 const authAuthorizeResponseSchema = buildApiResponseSchema(
   z.object({
@@ -74,7 +67,7 @@ const authAuthorizeResponseSchema = buildApiResponseSchema(
 const authConfigResponseSchema = buildApiResponseSchema(publicAuthConfigDataSchema, 'AuthConfigResponse');
 const authLoginResponseSchema = buildApiResponseSchema(authSessionDataSchema, 'AuthLoginResponse');
 const authCallbackResponseSchema = buildApiResponseSchema(authSessionDataSchema, 'AuthCallbackResponse');
-const authRefreshResponseSchema = buildApiResponseSchema(authRefreshDataSchema, 'AuthRefreshResponse');
+const authRefreshResponseSchema = buildApiResponseSchema(authSessionDataSchema, 'AuthRefreshResponse');
 const authMeResponseSchema = buildApiResponseSchema(z.object({
   user: sanitizedUserSchema.nullable(),
   permissions: z.array(z.string()),

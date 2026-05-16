@@ -100,6 +100,20 @@
       ],
       "protocolMappers": [
         {
+          "name": "subject",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "sub",
+            "user.attribute": "id",
+            "jsonType.label": "String"
+          }
+        },
+        {
           "name": "realm roles",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-realm-role-mapper",
@@ -169,6 +183,22 @@
           }
         }
       ]
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-operix-admin-client",
+      "enabled": true,
+      "serviceAccountClientId": "operix-admin-client",
+      "clientRoles": {
+        "realm-management": [
+          "query-groups",
+          "view-users",
+          "manage-users",
+          "query-users",
+          "manage-groups"
+        ]
+      }
     }
   ],
   "identityProviders": [

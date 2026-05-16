@@ -9,6 +9,17 @@ import TenantPolicyService from '../profile/tenants/tenant-policy.service.js';
 import { env } from '../config/env.js';
 
 export default class AuthService {
+  private static buildLocalKeycloakGroupId(tenantName: string) {
+    const normalized = tenantName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    return `local-${normalized || 'tenant'}`;
+  }
+
   static async getPublicConfig() {
     const tenantState = await TenantPolicyService.getPublicState();
     return {
@@ -36,11 +47,12 @@ export default class AuthService {
 
   static buildSessionPayload(tokenData: any, user: any) {
     return {
-      token: tokenData.id_token,
+      token: tokenData.access_token,
       refresh_token: tokenData.refresh_token,
       expires_in: tokenData.expires_in,
       refresh_expires_in: tokenData.refresh_expires_in,
       token_type: tokenData.token_type,
+      id_token: tokenData.id_token || null,
       user: sanitizeUser({
         id: user?.id || user?.sub,
         sub: user?.sub || user?.keycloak_id,
@@ -73,6 +85,14 @@ export default class AuthService {
     }
   }
 
+  static async logout(refreshToken: string) {
+    try {
+      await KeycloakAdminService.logout(refreshToken);
+    } catch (error: any) {
+      throw new Error(error.message || 'Erro ao encerrar sessão no Keycloak.');
+    }
+  }
+
   static async completeOnboarding(
     authenticatedUser: any,
     data: { company_name: string; cnpj?: string | null; description?: string | null },
@@ -100,8 +120,23 @@ export default class AuthService {
         throw new ValidationError('Unidade já cadastrada.', 409);
       }
 
-      const adminToken = await KeycloakAdminService.getAdminToken();
-      const { groupId, created } = await KeycloakAdminService.ensureGroupExists(tenantName, adminToken);
+      let adminToken: string | null = null;
+      let groupId = this.buildLocalKeycloakGroupId(tenantName);
+      let created = false;
+
+      try {
+        adminToken = await KeycloakAdminService.getAdminToken();
+        const groupResult = await KeycloakAdminService.ensureGroupExists(tenantName, adminToken);
+        groupId = groupResult.groupId;
+        created = groupResult.created;
+      } catch (error) {
+        if (env.deploymentMode !== 'LOCAL') {
+          throw error;
+        }
+
+        console.warn('[onboarding] Keycloak Admin indisponível no modo LOCAL; prosseguindo sem sincronizar grupos/roles.', error);
+      }
+
       let tenant: any = null;
 
       try {
@@ -111,8 +146,6 @@ export default class AuthService {
           cnpj: data.cnpj?.trim(),
           description: data.description?.trim(),
         }));
-
-        await KeycloakAdminService.addUserToGroup(authenticatedUser.sub, groupId, adminToken);
 
         const localUser = await UsersRepository.create(new UserModel({
           tenant_id: tenant.id,
@@ -127,19 +160,23 @@ export default class AuthService {
           password: null,
         }));
 
-        await KeycloakAdminService.assignRealmRoles(authenticatedUser.sub, [
-          'module:operational',
-          'module:inventory',
-          'module:organization',
-          'module:notifications',
-        ], adminToken);
+        if (adminToken) {
+          await KeycloakAdminService.addUserToGroup(authenticatedUser.sub, groupId, adminToken);
 
-        await KeycloakAdminService.updateUserAttributes(authenticatedUser.sub, {
-          admin: ['true'],
-          root: ['true'],
-          tenant: [tenant.name],
-          tenant_id: [String(tenant.id)],
-        }, adminToken);
+          await KeycloakAdminService.assignRealmRoles(authenticatedUser.sub, [
+            'module:operational',
+            'module:inventory',
+            'module:organization',
+            'module:notifications',
+          ], adminToken);
+
+          await KeycloakAdminService.updateUserAttributes(authenticatedUser.sub, {
+            admin: ['true'],
+            root: ['true'],
+            tenant: [tenant.name],
+            tenant_id: [String(tenant.id)],
+          }, adminToken);
+        }
 
         return sanitizeUser(localUser);
       } catch (error) {
@@ -147,7 +184,7 @@ export default class AuthService {
           await TenantRepository.remove(tenant.id);
         }
 
-        if (created) {
+        if (created && adminToken) {
           await KeycloakAdminService.deleteGroup(groupId, adminToken);
         }
 

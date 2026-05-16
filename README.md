@@ -220,6 +220,8 @@ Keycloak:
 - configure o Identity Provider Google com alias `google`;
 - configure redirect URI do frontend;
 - mantenha o client público com PKCE `S256`.
+- o client `operix-admin-client` precisa da service account com roles de `realm-management` como `query-groups`, `manage-groups`, `query-users` e `manage-users`;
+- se o volume do Keycloak já existir, recrie o ambiente para reimportar o realm atualizado: `docker compose -f compose.yaml down -v` e depois `bun run docker:dev`.
 
 ## SaaS e Produção
 

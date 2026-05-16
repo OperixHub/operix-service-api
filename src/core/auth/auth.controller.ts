@@ -1,8 +1,6 @@
 import type { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import AuthService from './auth.service.js';
 import ResponseHandler from '../utils/response-handler.js';
-import UsersRepository from '../profile/users/users.repository.js';
 import { sanitizeUser } from '../utils/sanitize.js';
 import AuthMiddleware from '../middlewares/auth.middleware.js';
 import PermissionsService from '../profile/permissions/permissions.service.js';
@@ -40,7 +38,7 @@ export default class AuthController {
         req.body.code_verifier,
       );
 
-      const user = await AuthMiddleware.verifyRawToken(tokenData.id_token);
+      const user = await AuthMiddleware.verifyRawToken(tokenData.access_token);
       return ResponseHandler.success(res, AuthService.buildSessionPayload(tokenData, user), 'Login realizado com sucesso.');
     } catch (error: any) {
       return ResponseHandler.error(res, error.message || 'Erro ao finalizar login.', 401);
@@ -51,29 +49,8 @@ export default class AuthController {
     try {
       const { username, password } = req.body;
       const data = await AuthService.login(username, password);
-
-      const decoded: any = jwt.decode((data as any).access_token);
-      const localUserByKeycloakId = await UsersRepository.findByKeycloakId(decoded?.sub);
-      const localUserByEmail = decoded?.email ? await UsersRepository.findByEmail(decoded.email) : null;
-      const localUser = localUserByKeycloakId || localUserByEmail;
-
-      const roles: string[] = decoded?.realm_access?.roles || [];
-
-      return ResponseHandler.success(res, {
-        token: (data as any).access_token,
-        refresh_token: (data as any).refresh_token,
-        user: {
-          id: localUser?.id || decoded?.sub,
-          sub: decoded?.sub || localUser?.keycloak_id || null,
-          name: localUser?.name || decoded?.name || decoded?.preferred_username || username,
-          username: decoded?.preferred_username || username,
-          email: decoded?.email || localUser?.email || null,
-          tenant_id: localUser?.tenant_id ?? (decoded?.tenant_id ? Number(decoded.tenant_id) : null),
-          keycloak_id: localUser?.keycloak_id || decoded?.sub || null,
-          admin: Boolean(localUser?.admin || roles.includes('admin') || roles.includes('ADMIN')),
-          roles,
-        },
-      }, 'Login realizado com sucesso.');
+      const user = await AuthMiddleware.verifyRawToken((data as any).access_token);
+      return ResponseHandler.success(res, AuthService.buildSessionPayload(data, user), 'Login realizado com sucesso.');
     } catch (error: any) {
       return ResponseHandler.error(res, error.message || 'Erro no login.', 401);
     }
@@ -82,9 +59,19 @@ export default class AuthController {
   static async refreshToken(req: Request, res: Response) {
     try {
       const data = await AuthService.refreshToken(req.body.refresh_token);
-      return ResponseHandler.success(res, data, 'Refresh token realizado com sucesso!', 200);
+      const user = await AuthMiddleware.verifyRawToken((data as any).access_token);
+      return ResponseHandler.success(res, AuthService.buildSessionPayload(data, user), 'Refresh token realizado com sucesso!', 200);
     } catch (error: any) {
       return ResponseHandler.error(res, error.message || 'Refresh token inválido ou expirado', 401);
+    }
+  }
+
+  static async logout(req: Request, res: Response) {
+    try {
+      await AuthService.logout(req.body.refresh_token);
+      return ResponseHandler.success(res, null, 'Logout realizado com sucesso.', 200);
+    } catch (error: any) {
+      return ResponseHandler.error(res, error.message || 'Erro ao realizar logout.', 400);
     }
   }
 

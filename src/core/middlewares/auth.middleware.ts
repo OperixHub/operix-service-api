@@ -8,33 +8,75 @@ import UserModel from '../profile/users/users.model.js';
 import TenantRepository from '../profile/tenants/tenants.repository.js';
 import { env } from '../config/env.js';
 
-const client = jwksClient({
-  jwksUri: env.keycloakJwksUri,
-  cache: true,
-  cacheMaxEntries: 5,
-  cacheMaxAge: 600_000,
-});
+const jwksUris = Array.from(new Set([
+  env.keycloakJwksUri,
+  `${env.keycloakPublicUrl}/realms/${env.keycloakRealm}/protocol/openid-connect/certs`,
+  `${env.keycloakUrl}/realms/${env.keycloakRealm}/protocol/openid-connect/certs`,
+]));
+
+function createJwksClient(jwksUri: string, cache: boolean) {
+  return jwksClient({
+    jwksUri,
+    cache,
+    cacheMaxEntries: 5,
+    cacheMaxAge: 600_000,
+  });
+}
+
+const cachedJwksClients = jwksUris.map((jwksUri) => createJwksClient(jwksUri, true));
+
+function getSigningKeyFromClient(client: ReturnType<typeof jwksClient>, kid: string) {
+  return new Promise<string>((resolve, reject) => {
+    client.getSigningKey(kid, (err, key) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      if (!key) {
+        reject(new Error(`Nenhuma chave encontrada para kid=${kid}`));
+        return;
+      }
+
+      try {
+        resolve(key.getPublicKey());
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
 
 function getKey(header: any, callback: jwt.SigningKeyCallback) {
   if (!header.kid) {
     return callback(new Error('Token JWT não contém "kid" no header'));
   }
 
-  client.getSigningKey(header.kid, (err, key) => {
-    if (err) {
-      return callback(err);
+  (async () => {
+    const errors: string[] = [];
+
+    for (const client of cachedJwksClients) {
+      try {
+        const publicKey = await getSigningKeyFromClient(client, header.kid);
+        callback(null, publicKey);
+        return;
+      } catch (error: any) {
+        errors.push(error.message || String(error));
+      }
     }
 
-    if (!key) {
-      return callback(new Error(`Nenhuma chave encontrada para kid=${header.kid}`));
+    for (const jwksUri of jwksUris) {
+      try {
+        const publicKey = await getSigningKeyFromClient(createJwksClient(jwksUri, false), header.kid);
+        callback(null, publicKey);
+        return;
+      } catch (error: any) {
+        errors.push(error.message || String(error));
+      }
     }
 
-    try {
-      callback(null, key.getPublicKey());
-    } catch (error) {
-      callback(error as Error);
-    }
-  });
+    callback(new Error(`Nenhuma chave de assinatura encontrada para kid=${header.kid}. ${errors.join(' | ')}`));
+  })().catch((error) => callback(error as Error));
 }
 
 const validIssuers = [
@@ -73,6 +115,10 @@ async function resolveTenantId(decoded: any, user?: { tenant_id?: number | null 
 
 async function provisionUser(decoded: any): Promise<any> {
   const keycloakId = decoded.sub;
+  if (!keycloakId) {
+    throw new Error('Token JWT não contém a claim obrigatória "sub"');
+  }
+
   const email = decoded.email || decoded.preferred_username || decoded.sub;
   const username = decoded.preferred_username || decoded.username || decoded.email || decoded.sub;
 
@@ -128,6 +174,10 @@ export default class AuthMiddleware {
 
     if (normalized.includes('jwt expired') || normalized.includes('token expired')) {
       return 'Token expirado';
+    }
+
+    if (normalized.includes('unable to find a signing key') || normalized.includes('nenhuma chave de assinatura encontrada')) {
+      return 'Token inválido para a instância atual do Keycloak. Faça login novamente.';
     }
 
     return rawMessage || 'Falha na autenticação';

@@ -88,6 +88,18 @@ export function registerAuthDocs(registry: OpenAPIRegistry) {
   });
 
   registry.registerPath({
+    method: 'post',
+    path: '/auth/logout',
+    tags: ['Autenticação'],
+    request: { body: { content: { 'application/json': { schema: authRefreshSchema } }, required: true } },
+    responses: {
+      200: {
+        description: 'Logout realizado com sucesso',
+      },
+    },
+  });
+
+  registry.registerPath({
     method: 'get',
     path: '/auth/me',
     tags: ['Autenticação'],

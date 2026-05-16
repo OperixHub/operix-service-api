@@ -13,6 +13,7 @@ describe('AuthService', () => {
   test('buildSessionPayload preserva sub e keycloak_id no usuário autenticado', () => {
     const result = AuthService.buildSessionPayload({
       access_token: 'access-token',
+      id_token: 'id-token',
       refresh_token: 'refresh-token',
       expires_in: 300,
       refresh_expires_in: 1800,
@@ -30,6 +31,8 @@ describe('AuthService', () => {
       roles: ['module:organization'],
     });
 
+    expect(result.token).toBe('access-token');
+    expect(result.id_token).toBe('id-token');
     expect(result.user).toEqual(expect.objectContaining({
       id: 22,
       sub: 'kc-google',
