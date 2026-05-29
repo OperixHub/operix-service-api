@@ -45,6 +45,7 @@ export default class ServicosView {
       status: '',
       payment: '',
     };
+    this.filtersCollapsed = true;
   }
 
   async render() {
@@ -71,62 +72,76 @@ export default class ServicosView {
 
       <!-- Filtros -->
       <div class="panel" style="margin-bottom: 16px;">
-        <div class="panel-header">
-          <h3 class="panel-title">Filtros</h3>
+        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 class="panel-title">Filtros</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-toggle-filters" title="${this.filtersCollapsed ? 'Expandir' : 'Recolher'} filtros" style="font-size: 18px;">
+              <i data-lucide="chevron-${this.filtersCollapsed ? 'down' : 'up'}"></i>
+            </button>
+          </div>
           <button class="btn btn-secondary btn-sm" id="btn-clear-filters">
             <i data-lucide="filter-x"></i> Limpar filtros
           </button>
         </div>
-        ${renderFormRow(`
-          ${renderFormGroup({
-            label: 'Busca geral',
-            controlHtml: '<input type="text" id="filter-search" class="form-control" placeholder="OS, cliente, telefone, produto, endereço ou observação">',
-          })}
-          ${renderFormGroup({
-            label: 'Código OS',
-            controlHtml: '<input type="text" id="filter-order" class="form-control" placeholder="ex: 123">',
-          })}
-        `)}
-        ${renderFormRow(`
-          ${renderFormGroup({
-            label: 'Data',
-            controlHtml: '<input type="date" id="filter-date" class="form-control">',
-          })}
-          ${renderFormGroup({
-            label: 'Produto',
-            controlHtml: '<select id="filter-product" class="form-control"><option value="">Todos os produtos</option></select>',
-          })}
-        `)}
-        ${renderFormRow(`
-          ${renderFormGroup({
-            label: 'Cliente',
-            controlHtml: '<input type="text" id="filter-client" class="form-control" placeholder="Nome do cliente">',
-          })}
-          ${renderFormGroup({
-            label: 'Telefone',
-            controlHtml: '<input type="text" id="filter-telephone" class="form-control" placeholder="DDD + número">',
-          })}
-        `)}
-        ${renderFormRow(`
-          ${renderFormGroup({
-            label: 'Endereço',
-            controlHtml: '<input type="text" id="filter-adress" class="form-control" placeholder="Rua, bairro, cidade">',
-          })}
-          ${renderFormGroup({
-            label: 'Observação',
-            controlHtml: '<input type="text" id="filter-observation" class="form-control" placeholder="Notas do serviço">',
-          })}
-        `)}
-        ${renderFormRow(`
-          ${renderFormGroup({
-            label: 'Status',
-            controlHtml: '<select id="filter-status" class="form-control"><option value="">Todos os Status</option></select>',
-          })}
-          ${renderFormGroup({
-            label: 'Pagamento',
-            controlHtml: '<select id="filter-payment" class="form-control"><option value="">Todos os Pagamentos</option></select>',
-          })}
-        `)}
+        ${this.filtersCollapsed
+          ? renderFormRow(`
+              ${renderFormGroup({
+                label: 'Busca geral',
+                controlHtml: '<input type="text" id="filter-search" class="form-control" placeholder="OS, cliente, telefone, produto, endereço ou observação">',
+              })}
+            `)
+          : `
+            ${renderFormRow(`
+              ${renderFormGroup({
+                label: 'Busca geral',
+                controlHtml: '<input type="text" id="filter-search" class="form-control" placeholder="OS, cliente, telefone, produto, endereço ou observação">',
+              })}
+              ${renderFormGroup({
+                label: 'Código OS',
+                controlHtml: '<input type="text" id="filter-order" class="form-control" placeholder="ex: 123">',
+              })}
+            `)}
+            ${renderFormRow(`
+              ${renderFormGroup({
+                label: 'Data',
+                controlHtml: '<input type="date" id="filter-date" class="form-control">',
+              })}
+              ${renderFormGroup({
+                label: 'Produto',
+                controlHtml: '<select id="filter-product" class="form-control"><option value="">Todos os produtos</option></select>',
+              })}
+            `)}
+            ${renderFormRow(`
+              ${renderFormGroup({
+                label: 'Cliente',
+                controlHtml: '<input type="text" id="filter-client" class="form-control" placeholder="Nome do cliente">',
+              })}
+              ${renderFormGroup({
+                label: 'Telefone',
+                controlHtml: '<input type="text" id="filter-telephone" class="form-control" placeholder="DDD + número">',
+              })}
+            `)}
+            ${renderFormRow(`
+              ${renderFormGroup({
+                label: 'Endereço',
+                controlHtml: '<input type="text" id="filter-adress" class="form-control" placeholder="Rua, bairro, cidade">',
+              })}
+              ${renderFormGroup({
+                label: 'Observação',
+                controlHtml: '<input type="text" id="filter-observation" class="form-control" placeholder="Notas do serviço">',
+              })}
+            `)}
+            ${renderFormRow(`
+              ${renderFormGroup({
+                label: 'Status',
+                controlHtml: '<select id="filter-status" class="form-control"><option value="">Todos os Status</option></select>',
+              })}
+              ${renderFormGroup({
+                label: 'Pagamento',
+                controlHtml: '<select id="filter-payment" class="form-control"><option value="">Todos os Pagamentos</option></select>',
+              })}
+            `)}
+          `}
       </div>
 
       <!-- Tabela -->
@@ -153,10 +168,17 @@ export default class ServicosView {
     // Registra Eventos de Tabs e Filtros
     document.getElementById('tab-geral').addEventListener('click', () => this.switchTab('geral'));
     document.getElementById('tab-almoxarifado').addEventListener('click', () => this.switchTab('almoxarifado'));
-    
     document.getElementById('btn-new-service').addEventListener('click', () => this.handleNewService());
-    
     this.bindFilterEvents();
+
+    // Botão de recolher/expandir filtros
+    const btnToggleFilters = document.getElementById('btn-toggle-filters');
+    if (btnToggleFilters) {
+      btnToggleFilters.addEventListener('click', () => {
+        this.filtersCollapsed = !this.filtersCollapsed;
+        this.render();
+      });
+    }
 
     // Inicia carregamento
     await this.loadInitialData();

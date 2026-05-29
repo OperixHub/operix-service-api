@@ -18,7 +18,7 @@ export default class LoginView {
           <div class="login-header">
             <div class="login-logo">
               <i data-lucide="shield"></i>
-              <span>${process.env.APP_NAME}</span>
+              <span>Operix Service</span>
             </div>
             <p class="login-subtitle">Entre com as suas credenciais de acesso</p>
           </div>

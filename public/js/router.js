@@ -10,11 +10,11 @@ const routes = {
   '/login': { view: 'login', public: true },
   '/auth/callback': { view: 'auth-callback', public: true },
   '/onboarding': { view: 'onboarding', protected: true },
-  '/dashboard': { view: 'dashboard', protected: true, label: 'Dashboard', icon: 'layout-dashboard' },
+  '/dashboard': { view: 'dashboard', protected: true, label: 'Painel de Controle', icon: 'layout-dashboard' },
   '/servicos': { view: 'servicos', protected: true, permission: 'operational.services.access', label: 'Serviços', icon: 'wrench' },
   '/ordem-servico': { view: 'ordem-servico', protected: true, permission: 'operational.services.access', label: 'Ordens de Serviço', icon: 'file-text' },
   '/estoque': { view: 'estoque', protected: true, permission: 'inventory.stock.access', label: 'Estoque', icon: 'package' },
-  '/usuarios': { view: 'usuarios', protected: true, permission: 'organization.users.access', label: 'Usuários & Níveis', icon: 'users' },
+  '/usuarios': { view: 'usuarios', protected: true, permission: 'organization.users.access', label: 'Usuários', icon: 'users' },
   '/parametros': { view: 'parametros', protected: true, permission: 'operational.status.access', label: 'Parâmetros', icon: 'sliders' },
   '/registros': { view: 'registros', protected: true, label: 'Auditoria', icon: 'database' }
 };
@@ -129,7 +129,7 @@ class Router {
     // Renderiza a estrutura monolítica SaaS
     const user = api.getUser() || { name: 'Usuário', email: '' };
     const access = api.getAccess() || {};
-    const companyName = access.tenant_name || access.company_name || user.company_name || user.tenant_name || process.env.APP_NAME || 'Operix';
+    const companyName = access.tenant_name || access.company_name || user.company_name || user.tenant_name || 'Operix Service';
     const userInitials = user.name ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'OP';
     const userRole = user.admin ? 'Administrador' : (user.role_title || 'Membro');
 
@@ -234,13 +234,15 @@ class Router {
     // Evento de Logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        if (await import('./helpers.js').then(({ confirmDialog }) => confirmDialog({
+      logoutBtn.addEventListener('click', async () => {
+        const { confirmDialog } = await import('./helpers.js');
+        const confirmed = await confirmDialog({
           title: 'Sair do sistema',
           text: 'Deseja realmente encerrar a sessão atual?',
           confirmButtonText: 'Sair',
           icon: 'warning',
-        }))) {
+        });
+        if (confirmed) {
           api.logout();
         }
       });
@@ -270,8 +272,7 @@ class Router {
     if (!routeInfo) return;
 
     breadcrumbs.innerHTML = `
-      <a href="#/dashboard">Operix</a>
-      <span class="separator">/</span>
+      <a href="#/dashboard"><span class="separator"> / </span></a>
       <span class="current">${routeInfo.label || 'Início'}</span>
     `;
   }
