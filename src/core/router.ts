@@ -2,28 +2,28 @@ import { Router, json } from 'express';
 import { serve, setup } from 'swagger-ui-express';
 import { generateOpenApiDocument } from './docs/openapi.js';
 
-import AuthMiddleware from './middlewares/auth.middleware.js';
-import { operationalRouter } from '../modules/operational/index.js';
-import { inventoryRouter } from '../modules/inventory/index.js';
-import { profileRouter } from './profile/index.js';
-import { notificationsRouter } from '../modules/notifications/index.js';
-import authRouter from './auth/auth.routes.js';
-import logsRouter from './logs/logs.routes.js';
+import AutenticacaoMiddleware from './middlewares/autenticacao.middleware.js';
+import { operationalRouter } from '../modules/operacional/index.js';
+import { inventoryRouter } from '../modules/inventario/index.js';
+import { profileRouter } from './perfil/index.js';
+import { notificationsRouter } from '../modules/notificacoes/index.js';
+import authRouter from './autenticacao/autenticacao.routes.js';
+import logsRouter from './registros/registros.routes.js';
 
 const router = Router();
 const openApiDocument = generateOpenApiDocument();
 
 router.use(json());
 
-router.get('/health', (_req, res) => res.status(200).json({ status: 'ok', service: 'operix-service-api' }));
+router.get('/saude', (_req, res) => res.status(200).json({ status: 'ok', service: 'operix-service-api' }));
 router.use('/docs', serve);
 router.get('/docs', setup(openApiDocument));
 
 // Rotas públicas de Autenticação/Proxy para o Keycloak
-router.use('/api/auth', authRouter);
+router.use('/api/autenticacao', authRouter);
 
 // Middleware Global de Auth do Keycloak
-router.use(AuthMiddleware.authToken);
+router.use('/api', AutenticacaoMiddleware.autenticarToken);
 
 // Rotas Modulares
 router.use('/api', operationalRouter);

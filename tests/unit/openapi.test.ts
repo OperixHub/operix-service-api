@@ -5,19 +5,19 @@ describe('OpenAPI', () => {
     const document = generateOpenApiDocument();
     const paths = document.paths;
 
-    expect(paths['/auth/config']?.get).toBeDefined();
-    expect(paths['/auth/authorize']?.post).toBeDefined();
-    expect(paths['/auth/callback']?.post).toBeDefined();
-    expect(paths['/auth/login']?.post).toBeDefined();
-    expect(paths['/auth/refresh']?.post).toBeDefined();
-    expect(paths['/auth/me']?.get).toBeDefined();
-    expect(paths['/auth/onboarding']?.post).toBeDefined();
+    expect(paths['/autenticacao/configuracao']?.get).toBeDefined();
+    expect(paths['/autenticacao/autorizar']?.post).toBeDefined();
+    expect(paths['/autenticacao/retorno']?.post).toBeDefined();
+    expect(paths['/autenticacao/login']?.post).toBeDefined();
+    expect(paths['/autenticacao/renovar']?.post).toBeDefined();
+    expect(paths['/autenticacao/eu']?.get).toBeDefined();
+    expect(paths['/autenticacao/onboarding']?.post).toBeDefined();
 
-    expect(paths['/profile/me']?.get).toBeDefined();
-    expect(paths['/profile/me']?.patch).toBeDefined();
-    expect(paths['/profile/company']?.get).toBeDefined();
-    expect(paths['/profile/company']?.patch).toBeDefined();
-    expect(paths['/profile/system']?.get).toBeDefined();
-    expect(paths['/users/{id}/access']?.patch).toBeDefined();
+    expect(paths['/perfil/eu']?.get).toBeDefined();
+    expect(paths['/perfil/eu']?.patch).toBeDefined();
+    expect(paths['/perfil/empresa']?.get).toBeDefined();
+    expect(paths['/perfil/empresa']?.patch).toBeDefined();
+    expect(paths['/perfil/sistema']?.get).toBeDefined();
+    expect(paths['/usuarios/{id}/acesso']?.patch).toBeDefined();
   });
 });

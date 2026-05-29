@@ -1,8 +1,8 @@
 import { io } from './app.js';
-import MessagingService from './utils/messaging.service.js';
-import AuthMiddleware from './middlewares/auth.middleware.js';
+import MensageriaService from './utils/mensageria.service.js';
+import AutenticacaoMiddleware from './middlewares/autenticacao.middleware.js';
 
-MessagingService.init(io);
+MensageriaService.init(io);
 
 io.use(async (socket, next) => {
   const token = socket.handshake.auth.token || socket.handshake.headers['authorization'];
@@ -13,7 +13,7 @@ io.use(async (socket, next) => {
   const cleanToken = typeof token === 'string' && token.startsWith('Bearer ') ? token.split(' ')[1] : token;
 
   try {
-    const user = await AuthMiddleware.verifyRawToken(cleanToken as string);
+    const user = await AutenticacaoMiddleware.verificarTokenBruto(cleanToken as string);
     (socket as any).user = user;
     next();
   } catch (error) {

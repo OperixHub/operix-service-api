@@ -1,10 +1,10 @@
 import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
-import { registerInventoryDocs } from '../../modules/inventory/docs/inventory.docs.js';
-import { registerNotificationsDocs } from '../../modules/notifications/docs/notifications.docs.js';
-import { registerOperationalDocs } from '../../modules/operational/docs/operational.docs.js';
-import { registerAuthDocs } from '../auth/docs/auth.docs.js';
-import { registerProfileDocs } from '../profile/docs/profile.docs.js';
-import { registerLogsDocs } from '../logs/docs/logs.docs.js';
+import { registerInventarioDocs } from '../../modules/inventario/docs/inventario.docs.js';
+import { registerNotificacoesDocs } from '../../modules/notificacoes/docs/notificacoes.docs.js';
+import { registerOperacionalDocs } from '../../modules/operacional/docs/operacional.docs.js';
+import { registerAuthDocs } from '../autenticacao/docs/autenticacao.docs.js';
+import { registerProfileDocs } from '../perfil/docs/perfil.docs.js';
+import { registerLogsDocs } from '../registros/docs/registros.docs.js';
 
 const registry = new OpenAPIRegistry();
 
@@ -14,10 +14,10 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
   bearerFormat: 'JWT',
 });
 
-registerOperationalDocs(registry);
-registerInventoryDocs(registry);
+registerOperacionalDocs(registry);
+registerInventarioDocs(registry);
 registerProfileDocs(registry);
-registerNotificationsDocs(registry);
+registerNotificacoesDocs(registry);
 registerAuthDocs(registry);
 registerLogsDocs(registry);
 
@@ -40,13 +40,13 @@ export function generateOpenApiDocument() {
       { name: 'Unidades', description: '[Core:Profile] Endpoints de gerenciamento das unidades da aplicação, representadas como tenants.' },
       { name: 'Permissões', description: '[Core:Profile] Endpoints para resolver permissões efetivas, catálogo de acesso e overrides por usuário.' },
       { name: 'Logs', description: '[Core:Logs] Endpoints para consulta paginada de logs e rastreamento de eventos da aplicação.' },
-      { name: 'Estoque', description: '[Module:Inventory] Endpoints de cadastro, listagem, atualização e remoção de itens de estoque.' },
-      { name: 'Notificações', description: '[Module:Notifications] Endpoints de informações do sistema e base para futuros canais como e-mail e WhatsApp.' },
-      { name: 'Serviços', description: '[Module:Operational] Endpoints de gerenciamento de serviços, status operacionais e fluxo de almoxarifado.' },
-      { name: 'Ordens de Serviço', description: '[Module:Operational] Endpoints de consulta e manutenção de ordens de serviço e seus orçamentos.' },
-      { name: 'Status de Serviço', description: '[Module:Operational] Endpoints de gerenciamento dos status utilizados no ciclo de atendimento dos serviços.' },
-      { name: 'Status de Pagamento', description: '[Module:Operational] Endpoints de gerenciamento dos status de pagamento aplicados aos serviços.' },
-      { name: 'Tipos de Produtos', description: '[Module:Operational] Endpoints de gerenciamento dos tipos de produtos utilizados pelos serviços.' },
+      { name: 'Estoque', description: '[Module:Inventario] Endpoints de cadastro, listagem, atualização e remoção de itens de estoque.' },
+      { name: 'Notificações', description: '[Module:Notificacoes] Endpoints de informações do sistema e base para futuros canais como e-mail e WhatsApp.' },
+      { name: 'Serviços', description: '[Module:Operacional] Endpoints de gerenciamento de serviços, status operacionais e fluxo de almoxarifado.' },
+      { name: 'Ordens de Serviço', description: '[Module:Operacional] Endpoints de consulta e manutenção de ordens de serviço e seus orçamentos.' },
+      { name: 'Status de Serviço', description: '[Module:Operacional] Endpoints de gerenciamento dos status utilizados no ciclo de atendimento dos serviços.' },
+      { name: 'Status de Pagamento', description: '[Module:Operacional] Endpoints de gerenciamento dos status de pagamento aplicados aos serviços.' },
+      { name: 'Tipos de Produtos', description: '[Module:Operacional] Endpoints de gerenciamento dos tipos de produtos utilizados pelos serviços.' },
     ],
     servers: [
       { url: 'http://localhost:3333/api', description: 'Ambiente local' },
